@@ -1,0 +1,17 @@
+col_1|col_2|col_3|col_4|col_5|col_6|col_7|col_8|col_9|col_10|col_11
+4779|Using a Team consist of 3 or more Members of Water Attribute (Team Skills excluded)|The Team Leader is the same as the Ally|Completing the stage in 6 Rounds|0|0|0|0|0|0|0
+4780|Using a Team consist of 3 or more Members of Water Attribute (Team Skills excluded)|Using no Active Skills during the battle (Included Combine Skill)|Completing the stage in 7 Rounds|0|0|0|0|0|0|0
+4781|Using a Team consists of only Members of Water Attribute (Team Skills excluded)|Both Team Leader and Ally are Dragons|Using a Team consists of Members of 3 or more Races|0|0|0|0|0|0|0
+4782|Using a Team consists of only Members of Water Attribute (Team Skills excluded)|Using a Team consist of 3 or more Elves|Using a Team consists of only Humans|0|0|0|0|0|0|0
+4794|Using a Team consist of 3 or more Members of Light Attribute (Team Skills excluded)|Using no Active Skills during the battle (Included Combine Skill)|Completing the stage in 6 Rounds|0|0|0|0|0|0|0
+4795|Using a Team consist of 3 or more Members of Light Attribute (Team Skills excluded)|Using a Team consists of only 4 Members|Completing the stage in 7 Rounds|0|0|0|0|0|0|0
+4796|Using a Team consists of only Members of Light Attribute (Team Skills excluded)|Both Team Leader and Ally are Gods|Using a Team consists of Members of 2 or more Attributes (Team Skills excluded)|0|0|0|0|0|0|0
+4797|Using a Team consists of only Members of Light Attribute (Team Skills excluded)|Using a Team consist of 3 or more Dragons|Using a Team consists of only Demons|0|0|0|0|0|0|0
+4799|Using a Team consist of 3 or more Members of Dark Attribute (Team Skills excluded)|The Team Leader is the same as the Ally|Completing the stage in 6 Rounds|0|0|0|0|0|0|0
+4800|Using a Team consist of 3 or more Members of Dark Attribute (Team Skills excluded)|Using no Active Skills during the battle (Included Combine Skill)|Completing the stage in 7 Rounds|0|0|0|0|0|0|0
+4801|Using a Team consists of only Members of Dark Attribute (Team Skills excluded)|Both Team Leader and Ally are Demons|Using a Team consists of Members of 3 or more Races|0|0|0|0|0|0|0
+4802|Using a Team consists of only Members of Dark Attribute (Team Skills excluded)|Using a Team consist of 3 or more Beasts|Using a Team consists of only Dragons|0|0|0|0|0|0|0
+5533|Using a Team consist of 3 or more Members of Water Attribute (Team Skills excluded)|Using no Active Skills during the battle (Included Combine Skill)|Completing the stage in 6 Rounds|0|0|0|0|0|0|0
+5534|Using a Team consist of 3 or more Members of Water Attribute (Team Skills excluded)|The Team Leader is the same as the Ally|Completing the stage in 7 Rounds|0|0|0|0|0|0|0
+5535|Using a Team consists of only Members of Water Attribute (Team Skills excluded)|Both Team Leader and Ally are Elves|Using a Team consists of only Beasts|0|0|0|0|0|0|0
+5536|Using a Team consists of only Members of Water Attribute (Team Skills excluded)|Using a Team consist of 3 or more Gods|Using a Team consists of only Members of Earth Attribute (Team Skills excluded)|0|0|0|0|0|0|0

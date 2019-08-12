@@ -1,0 +1,17 @@
+col_1|col_2|col_3|col_4|col_5
+3|1491|3 ★ - Baby Harpy x 2|0|0
+6|1491|6 ★ - Craft - Shadowy Suspire Bubble|0|0
+9|1491|9 ★ - 1 Diamond|0|0
+12|1491|12 ★ - 150 souls|0|0
+3|1487|3 ★ - Baby Harpy x 2|0|0
+6|1487|6 ★ - Craft - Spiral Suspire Bubble|0|0
+9|1487|9 ★ - 1 Diamond|0|0
+12|1487|12 ★ - 150 souls|0|0
+3|1490|3 ★ - Baby Harpy x 2|0|0
+6|1490|6 ★ - Craft - Glittering Suspire Bubble|0|0
+9|1490|9 ★ - 1 Diamond|0|0
+12|1490|12 ★ - 150 souls|0|0
+3|1712|3 ★ - Power Core x 2|0|0
+6|1712|6 ★ - Craft - Molten Suspire Spell|0|0
+9|1712|9 ★ - 1 Diamond|0|0
+12|1712|12 ★ - 150 souls|0|0

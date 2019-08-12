@@ -1,0 +1,9 @@
+col_1|col_2|col_3|col_4|col_5|col_6|col_7|col_8|col_9|col_10|col_11
+3107|Using a Team consist of 3 or more Members of Light Attribute (Team Skills excluded)|Using a Team consists of only 3 Members|Completing the stage in 5 Rounds|0|0|0|0|0|0|0
+3108|Using a Team consist of 3 or more Members of Light Attribute (Team Skills excluded)|Using a Team which cost is 22 or below (excluding Ally)|Completing the stage in 7 Rounds|0|0|0|0|0|0|0
+3109|Using a Team consists of only Members of Light Attribute (Team Skills excluded)|The Team Leader is the same as the Ally|Using a Team consist of 3 or more Demons|0|0|0|0|0|0|0
+3110|Using a Team consists of only Members of Light Attribute (Team Skills excluded)|Both Team Leader and Ally are Beasts|Using a Team consists of Members of 5 Attributes (Team Skills excluded)|0|0|0|0|0|0|0
+5984|Using a Team consist of 3 or more Members of Earth Attribute (Team Skills excluded)|Using no Active Skills during the battle (Included Combine Skill)|Completing the stage in 6 Rounds|0|0|0|0|0|0|0
+5985|Using a Team consist of 3 or more Members of Earth Attribute (Team Skills excluded)|The Team Leader is the same as the Ally|Completing the stage in 7 Rounds|0|0|0|0|0|0|0
+5986|Using a Team consists of only Members of Earth Attribute (Team Skills excluded)|Both Team Leader and Ally are Elves|Using a Team consists of only Beasts|0|0|0|0|0|0|0
+5987|Using a Team consists of only Members of Earth Attribute (Team Skills excluded)|Using a Team consist of 3 or more Humans|Using a Team consists of only Members of Fire Attribute (Team Skills excluded)|0|0|0|0|0|0|0

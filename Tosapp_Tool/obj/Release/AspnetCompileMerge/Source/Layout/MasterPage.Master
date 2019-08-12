@@ -1,0 +1,171 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="MasterPage.master.cs" Inherits="Tosapp_Tool.Layout.MasterPage" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="text/html" content="IE=edge,chrome=1" />
+<meta charset="utf-8"/>
+    <title>熾天使Seraphim - 工具區</title>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+    <link rel="shortcut icon" type="image/x-icon" href="Assets/images/favicon.ico" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+    <!-- bootstrap & fontawesome -->
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../assets/font-awesome/4.5.0/css/font-awesome.min.css" />
+
+    <!-- page specific plugin styles -->
+
+    <!-- text fonts -->
+    <link rel="stylesheet" href="../assets/css/fonts.googleapis.com.css" />
+
+    <!-- Notity 警訊-->
+    <script src="../Assets/js/Notify.js"></script>
+
+    <!-- ace styles -->
+    <link rel="stylesheet" href="../assets/css/ace.min.css" class="ace-main-stylesheet"/>
+
+<%--      <!--[if lte IE 9]>
+			<link rel="stylesheet" href="../assets/css/ace-part2.min.css" class="ace-main-stylesheet" />
+		<![endif]-->
+    <!--<link rel="stylesheet" href="../assets/css/ace-skins.min.css" />
+    <link rel="stylesheet" href="../assets/css/ace-rtl.min.css" />-->
+
+    <!--[if lte IE 9]>
+		  <link rel="stylesheet" href="../assets/css/ace-ie.min.css" />
+		<![endif]-->--%>
+
+    <!-- inline styles related to this page -->
+
+    <!-- ace settings handler -->
+    <script src="../assets/js/ace-extra.min.js"></script>
+
+   <%--  <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+
+    <!--[if lte IE 8]>
+		<script src="../assets/js/html5shiv.min.js"></script>
+		<script src="../assets/js/respond.min.js"></script>
+		<![endif]-->--%>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            margin: 0px;
+        }
+
+        .EICUContainer {
+            height: 90%;
+            width: 99%;
+            margin: 0px;
+        }
+
+        #notifications {
+            cursor: pointer;
+            position: fixed;
+            right: 0px;
+            z-index: 9999;
+            bottom: 0px;
+            margin-bottom: 22px;
+            margin-right: 15px;
+            max-width: 300px;
+        }
+             .imgs {
+            min-width: 310px;
+            min-height: 220px;
+            padding: 0;
+        }
+    </style> 
+    <script src="../Assets/js/jquery-2.1.4.min.js"></script>
+    <%--<script type="text/javascript">
+        //取得網址列參數
+        $(document).ready(function () {
+            if (sessionStorage["eICU_Status"] != "Y")
+                window.location.href = "Login.aspx";
+            else {
+                //讀取 Local Session 
+                var loginID = sessionStorage["eICU_UserLoginID"];
+                var loginName = sessionStorage["eICU_UserLoginNAME"];
+                var vRole = sessionStorage["eICU_UserRole"];
+                if (vRole != '1') //不是系統管理員移除設定選項
+                {
+                    $("#SystemSettingLi").remove();
+                    $("#SystemSetting").remove();
+                }
+                //$("#LoginName").append(loginName.substr(0, 1) + "O" + loginName.substr(2, 1));
+                $("#LoginName").append(loginName);
+            }
+            $("#SICU").click(function () {
+                sessionStorage.eICU_ID = "8620";
+                window.location.href = "eICU.aspx";
+            });
+            $("#MICU").click(function () {
+                sessionStorage.eICU_ID = "8610";
+                window.location.href = "eICU.aspx";
+            });
+            $("#EICU").click(function () {
+                sessionStorage.eICU_ID = "8690";
+                window.location.href = "eICU.aspx";
+            });
+            $("#NICU").click(function () {
+                sessionStorage.eICU_ID = "8630";
+                window.location.href = "eICU.aspx";
+            });
+            $("#PICU").click(function () {
+                sessionStorage.eICU_ID = "8630";
+                window.location.href = "eICU.aspx";
+            });
+            $("#MainBrand").click(function () {
+                sessionStorage.eICU_ID = "8620";
+                window.location.href = "eICU.aspx";
+            });
+        });
+
+        function Logout() {
+            sessionStorage.removeItem["eICU_UserLoginID"];
+            sessionStorage.removeItem["eICU_UserLoginNAME"];
+            sessionStorage.removeItem["eICU_Status"];
+            window.location.href = "Login.aspx";
+        }        
+    </script>--%>
+</head>
+<body class="no-skin">
+    <div id="navbar" class="navbar navbar-default navbar-collapse h-navbar ace-save-state">
+        <div class="navbar-container ace-save-state" id="navbar-container">            
+            <nav role="navigation" class="navbar-menu pull-left navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="sidebar-collapse" id="li_Floor_Data">
+                        <a href="../Floor_Data.aspx" id="FICU" title="關卡資訊產生器">
+                            <i class="ace-icon fa fa-exchange"></i><strong>關卡資訊產生器</strong>
+                        </a>
+                    </li>
+                    <li class="sidebar-collapse" id="li_Locale_Parser">
+                        <a href="../Locale_Parser.aspx" id="LICU" title="字串檔轉換器">
+                            <i class="ace-icon fa fa-book"></i><strong>字串檔轉換器</strong>
+                        </a>
+                    </li>
+                    <li class="sidebar-collapse" id="li_StageDetail">
+                        <a href="../StageDetail.aspx" id="SICU" title="每日關卡成就查詢(中文版)">
+                            <i class="ace-icon fa fa-info-circle"></i><strong>每日關卡成就查詢(中文版)</strong>
+                        </a>
+                    </li>
+                    <li class="sidebar-collapse" id="li_StageDetailEn">
+                        <a href="../StageDetailEn.aspx" id="EICU" title="每日關卡成就查詢(英文版)">
+                            <i class="ace-icon fa fa-info-circle"></i><strong>每日關卡成就查詢(英文版)</strong>
+                        </a>
+                    </li>
+                    <li class="sidebar-collapse" id="li_CardQuery">
+                        <a href="../Floor_Data.aspx" id="CICU" title="卡片資訊查詢器">
+                            <i class="ace-icon fa fa-lock"></i><strong>卡片資訊查詢器(施工中)</strong>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="EICUContainer">
+        <asp:ContentPlaceHolder ID="FloorDataContentPlaceHolder" runat="server"></asp:ContentPlaceHolder>
+    </div>
+</body>
+</html>
