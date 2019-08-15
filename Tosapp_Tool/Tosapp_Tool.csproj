@@ -505,7 +505,6 @@
     <Content Include="js\tracking-min.js" />
     <Content Include="js\tracking.js" />
     <Content Include="js\utils.js" />
-    <Content Include="LOCALE.csv.txt" />
     <Content Include="Locale_Download.aspx" />
     <Content Include="Locale_Parser.aspx" />
     <Content Include="packages.config" />
@@ -531,6 +530,7 @@
     <Content Include="css\maps\jquery-loading.css.map" />
     <None Include="Properties\PublishProfiles\floortrans.pubxml" />
     <None Include="Properties\PublishProfiles\floortrans_file.pubxml" />
+    <None Include="Properties\PublishProfiles\TosappTool.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

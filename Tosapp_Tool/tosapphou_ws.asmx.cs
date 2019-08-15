@@ -1824,8 +1824,8 @@ namespace Tosapp_Tool
             loadBossSkill2();
             loadMonsterData2();
             string htmlstr = "";
-            htmlstr = generateHtmlStr(floorName, arg_title_color, arg_title_word_color, arg_floor_json, arg_showtype);
-            //htmlstr = genHtml(floorName, arg_title_color, arg_title_word_color, arg_floor_json, arg_showtype);
+            //htmlstr = generateHtmlStr(floorName, arg_title_color, arg_title_word_color, arg_floor_json, arg_showtype);
+            htmlstr = genHtml(floorName, arg_title_color, arg_title_word_color, arg_floor_json, arg_showtype);
             //Context.Response.Output.Write(htmlstr);
             //HttpContext.Current.Response.Write(htmlstr);            
             //Context.Response.Output.Write("{\"reponse\":\"ok\"}");
