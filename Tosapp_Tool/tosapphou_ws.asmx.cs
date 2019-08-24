@@ -14,6 +14,7 @@ using NPOI.HSSF.UserModel;
 using MH;
 
 using System.Text;
+using System.Web.Script.Serialization;
 
 namespace Tosapp_Tool
 {
@@ -32,6 +33,7 @@ namespace Tosapp_Tool
         public Dictionary<string, string> dict_locale_csv = new Dictionary<string, string>();
         public Dictionary<string, string> dict_locale_csv_eng = new Dictionary<string, string>();
         public Dictionary<string, Monster> dic_monster_data = new Dictionary<string, Monster>();
+        JavaScriptSerializer serializer = new JavaScriptSerializer();
         public static byte[] ReadFile(string filePath)
         {
             byte[] buffer;
@@ -152,7 +154,7 @@ namespace Tosapp_Tool
 
             foreach (string r in rows)
             {
-                if(r.Trim() != "")
+                if (r.Trim() != "")
                 {
                     string[] items = r.Split(delimiter.ToCharArray());
                     ds.Tables[TableName].Rows.Add(items);
@@ -171,7 +173,7 @@ namespace Tosapp_Tool
         {
             MCSVFile m = new MCSVFile();
             m.LoadBinaryAsset(ReadFile(Server.MapPath("~/LOCALE.csv.txt")));
-            
+
             Dictionary<string, string> TipsManager = new Dictionary<string, string>();
 
             //m.NumRow()為所有字串的總數
@@ -301,9 +303,9 @@ namespace Tosapp_Tool
                     HtmlStr += "</div></fieldset>";
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                HtmlStr = "Exception: "+e.Message.ToString();
+                HtmlStr = "Exception: " + e.Message.ToString();
             }
             Encoding enc = Encoding.UTF8;
 
@@ -325,7 +327,7 @@ namespace Tosapp_Tool
                 var qry_stage = from dr in dt_stageList.AsEnumerable()
                                 where dr.Field<string>("col_4") == zone && dr.Field<string>("col_21") == "0"
                                 select dr;
-                
+
 
                 foreach (DataRow dr_stage in qry_stage)
                 {
@@ -340,21 +342,23 @@ namespace Tosapp_Tool
                     HtmlStr += "</legend>";
                     HtmlStr += "<div style='display:block;' id='div_part_" + dr_stage["col_1"].ToString() + "'>";
                     HtmlStr += "→<a href=\"https://tos.fandom.com/zh/wiki/" + dr_stage["col_10"].ToString().Replace(' ', '_') + "\" target=\"blank\">維基關卡資訊</a><br>";
-                    
+
                     var qry_floor = from c in dt_floorList.AsEnumerable()
-                                     join o in dt_floorStars.AsEnumerable() on c.Field<string>("col_1") equals o.Field<string>("col_1") into ps
-                                     from o in ps.DefaultIfEmpty()
-                                     where c.Field<string>("col_2") == dr_stage["col_1"].ToString()
-                                     select new { floorId = c.Field<string>("col_1"),
-                                         floorIcon = c.Field<string>("col_4"),
-                                         floorName = c.Field<string>("col_8"),
-                                         floorStam = c.Field<string>("col_5"),
-                                         floorSpirit = c.Field<string>("col_29"),
-                                         floorRound = c.Field<string>("col_6"),
-                                         floorStar1 = o == null ? "" : o.Field<string>("col_2"),
-                                         floorStar2 = o == null ? "" : o.Field<string>("col_3"),
-                                         floorStar3 = o == null ? "" : o.Field<string>("col_4")
-                                     };
+                                    join o in dt_floorStars.AsEnumerable() on c.Field<string>("col_1") equals o.Field<string>("col_1") into ps
+                                    from o in ps.DefaultIfEmpty()
+                                    where c.Field<string>("col_2") == dr_stage["col_1"].ToString()
+                                    select new
+                                    {
+                                        floorId = c.Field<string>("col_1"),
+                                        floorIcon = c.Field<string>("col_4"),
+                                        floorName = c.Field<string>("col_8"),
+                                        floorStam = c.Field<string>("col_5"),
+                                        floorSpirit = c.Field<string>("col_29"),
+                                        floorRound = c.Field<string>("col_6"),
+                                        floorStar1 = o == null ? "" : o.Field<string>("col_2"),
+                                        floorStar2 = o == null ? "" : o.Field<string>("col_3"),
+                                        floorStar3 = o == null ? "" : o.Field<string>("col_4")
+                                    };
 
                     foreach (var dr_floor in qry_floor)
                     {
@@ -374,7 +378,7 @@ namespace Tosapp_Tool
                             HtmlStr += dr_floor.floorStar2;
                             HtmlStr += "<br>☆ ";
                             HtmlStr += dr_floor.floorStar3;
-                        }                        
+                        }
                         HtmlStr += "<br>";
                     }
 
@@ -501,7 +505,7 @@ namespace Tosapp_Tool
             DataTable dt_stageList, dt_floorList, dt_floorStars, dt_floorStarRewards;
             try
             {
-                
+
                 dt_stageList = TxtConvertToDataTable("~/stageList.txt", "stageList", "|");
                 dt_floorList = TxtConvertToDataTable("~/floorList.txt", "stageList", "|");
                 dt_floorStars = TxtConvertToDataTable("~/floorStars.txt", "stageList", "|");
@@ -821,18 +825,7 @@ namespace Tosapp_Tool
             JObject jo_data = JObject.Parse(jo_all.GetValue("data").ToString());
             JArray ja_waves = JArray.Parse(jo_data.GetValue("waves").ToString());
 
-            JObject jo_waves;
-            JArray ja_enemies;
-
-            JObject jo_enemies;
-
-            int checkNextEnemy = 0;
-            string enemyHtml = "";            
             string used_skill_html = "";
-            string wikia_text = "";
-            string waveSkillId = "";
-            string tosapp_sql = "";
-            string sql_prefix = "";
 
             if (arg_title_color != "")
             {
@@ -860,10 +853,10 @@ namespace Tosapp_Tool
                 html_text += "<tr bgcolor=\"#" + title_color + "\"><td colspan=\"9\" align=\"center\"><font color=\"#" + title_word_color + "\"><b>" + floorName + "</b></font></td></tr>";
                 html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">層數</td><td align=\"center\">敵人</td><td align=\"center\">攻擊</td><td align=\"center\">CD </td><td align=\"center\">HP</td><td align=\"center\">防禦</td><td align=\"center\">掉落</td><td align=\"center\">金幣</td><td align=\"center\" width=\"200\">備註</td></tr>";
 
-                foreach(WaveBasic wb in wbl)
+                foreach (WaveBasic wb in wbl)
                 {
                     html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
-                    foreach(WaveDetail wd in wb.WaveDetailList)
+                    foreach (WaveDetail wd in wb.WaveDetailList)
                     {
                         //行頭
                         html_text += "<tr>";
@@ -889,7 +882,7 @@ namespace Tosapp_Tool
 
                         //CD
                         html_text += "<td align=\"center\" >";
-                        html_text += wd.Duration + ((wd.IniDuration != "0") ? "("+ wd.IniDuration + ")" : "");
+                        html_text += wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "");
                         html_text += "</td>";
                         //CD
 
@@ -935,13 +928,13 @@ namespace Tosapp_Tool
                         //備註
                         html_text += "<td align=\"center\">";
                         html_text += wd.EscapeRound != "0" ? ("<font color=\"#E7A400\"><b>※敵人會在 " + wd.EscapeRound + " 回合後離開</b></font><br>") : "";
-                        
+
                         if (wd.MultiBloodFlag != "X")
                         {
                             html_text += "<font color=\"#FFBBBB\"><b>【";
-                            if(wd.MultiBloodFlag == "N")
+                            if (wd.MultiBloodFlag == "N")
                                 html_text += "多血第 ";
-                            else if(wd.MultiBloodFlag == "C")
+                            else if (wd.MultiBloodFlag == "C")
                                 html_text += "變身第 ";
                             html_text += wd.MultiBloodLevel + " 血條】</b></font><br>";
                         }
@@ -984,14 +977,14 @@ namespace Tosapp_Tool
                     {
                         html_text += "<tr><td>{{關卡數據";
 
-                        html_text += "|" + wd.MonsterId.PadLeft(3,'0');
+                        html_text += "|" + wd.MonsterId.PadLeft(3, '0');
                         html_text += "|stage=" + (wd.WaveDetailId == 1 ? (wb.WaveId + (wd.MultiBloodFlag == "N" ? "{{" + num2chinese(wb.WaveDetailList.Count) + "血}}" : "") + (wd.MultiBloodFlag == "C" ? "{{前置}}" : "")) : "");
                         html_text += "|damage=" + wd.AckNum;
                         html_text += "|turn=" + wd.Duration + (wd.IniDuration != "0" ? ("{{初始CD|" + wd.IniDuration + "}}") : "");
                         html_text += "|hp=" + wd.HpNum;
                         html_text += "|def=" + wd.DefNum;
                         html_text += "|coin=" + wd.DropCoin;
-                        html_text += (wd.DropType == "monster" ? ("|drop=" + wd.DropId.PadLeft(3,'0') + "|lv=" + wd.DropLevel) : "");
+                        html_text += (wd.DropType == "monster" ? ("|drop=" + wd.DropId.PadLeft(3, '0') + "|lv=" + wd.DropLevel) : "");
                         html_text += (wd.DropType == "money" ? ("|chest=" + wd.DropLevel) : "");
                         html_text += (wd.EnemySkill != "0" ? ("|es=" + wd.EnemySkill) : "");
                         if (wd.WaveDetailId == 1)
@@ -1018,7 +1011,7 @@ namespace Tosapp_Tool
                 html_text += "[table width=100% cellspacing=1 cellpadding=1 border=5 align=center]";
                 html_text += "<br>";
                 html_text += "[tr][td colspan=3 bgcolor=#333333 align=center][font=微軟正黑體][size=4][b][color=#ffffff]《"
-                    + floorName+ "》[/color][/b][/size][/font][/td][/tr]";
+                    + floorName + "》[/color][/b][/size][/font][/td][/tr]";
                 html_text += "<br>";
                 html_text += "[tr bgcolor=#333333]";
                 html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]Battle[/color][/b][/size][/font][/td]";
@@ -1032,9 +1025,9 @@ namespace Tosapp_Tool
                     {
                         html_text += "<br>";
                         html_text += "[tr]";
-                        if(wd.WaveDetailId == 1)
+                        if (wd.WaveDetailId == 1)
                             html_text += "<br>[td rowspan=" + wb.WaveDetailList.Count + " width=8% bgcolor=#333333 align=center][font=微軟正黑體][size=3][b][color=#ffffff]"
-                                + wb.WaveId + (wd.MultiBloodFlag == "N" ? "<br>" + num2chinese(wb.WaveDetailList.Count) + "血" : "") 
+                                + wb.WaveId + (wd.MultiBloodFlag == "N" ? "<br>" + num2chinese(wb.WaveDetailList.Count) + "血" : "")
                                 + (wd.MultiBloodFlag == "C" ? "<br>前置" : "")
                                 + "[/color][/b][/size][/font][/td]";
                         html_text += "<br>";
@@ -1176,12 +1169,25 @@ namespace Tosapp_Tool
                 html_text += "<br><br>";
             }
             #endregion
+            #region 5.自定義json
+            if (showtype == 5)
+            {
+                html_text += "<br><br>";
+                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
+                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>自定義json</b></font></td></tr>";
+                html_text += "<tr><td>";
+                html_text += serializer.Serialize(wbl);
+                html_text += "</td></tr>";
+                html_text += "</table>";
+                html_text += "<br><br>";
+            }
+            #endregion
             html_text += "<p>※熾天使關卡資訊產生器 Design by Alex Hou<br>Copyright © 2013-2015 Seraphim Raiders All rights reserved.</p>";
 
             html_text += "</body>";
             html_text += "</html>";
 
-            if ((showtype != 1) && (showtype != 2) && (showtype != 3))
+            if ((showtype != 1) && (showtype != 2) && (showtype != 3) && (showtype != 5))
                 html_text = "";
 
             return html_text;
@@ -1190,7 +1196,8 @@ namespace Tosapp_Tool
         protected string num2chinese(int num)
         {
             string retStr = "";
-            switch (num) {
+            switch (num)
+            {
                 case 2:
                     retStr = "雙";
                     break;
@@ -1250,13 +1257,13 @@ namespace Tosapp_Tool
             html_head += "<p>※熾天使關卡資訊產生器 Design by Alex Hou</p>";
 
             html_text += html_head;
-            
+
             html_text += "<table cellpadding=\"1\" cellspacing=\"1\" frame=\"border\" border=\"5\" style=\"font-family:微軟正黑體;background-image:url('/Seraphim.png');\">";
             html_text += "<tr bgcolor=\"#" + title_color + "\"><td colspan=\"9\" align=\"center\"><font color=\"#" + title_word_color + "\"><b>" + floorName + "</b></font></td></tr>";
             //html_text += "<tr><td width=\"33\">層數</td><td width=\"179\">敵人</td><td width=\"66\">攻擊</td><td width=\"43\">CD </td><td width=\"59\">HP</td><td width=\"46\">防禦</td><td width=\"75\">掉落</td><td width=\"158\">備註</td></tr>";
             html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">層數</td><td align=\"center\">敵人</td><td align=\"center\">攻擊</td><td align=\"center\">CD </td><td align=\"center\">HP</td><td align=\"center\">防禦</td><td align=\"center\">掉落</td><td align=\"center\">金幣</td><td align=\"center\" width=\"200\">備註</td></tr>";
-            
-            
+
+
             for (int i = 0; i < ja_waves.Count; i++)
             {
                 jo_waves = JObject.Parse(ja_waves[i].ToString());
@@ -1294,7 +1301,7 @@ namespace Tosapp_Tool
                             wikia_text += "ws=" + waveSkillId + "|";
                         }
 
-                        enemyHtml = showEnemyHtml(jo_enemies, ref checkNextEnemy, ref used_skill_html, ref wikia_text,ref tosapp_sql, sql_prefix);
+                        enemyHtml = showEnemyHtml(jo_enemies, ref checkNextEnemy, ref used_skill_html, ref wikia_text, ref tosapp_sql, sql_prefix);
                         if (j == 0)
                         {
                             if (checkNextEnemy > 1)
@@ -1834,6 +1841,18 @@ namespace Tosapp_Tool
 
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public void GetTosappJson(string arg_floor_json)
+        {
+            string floor_json = "", JsonStr = "";
+            floor_json = arg_floor_json;
+            List<WaveBasic> wbl;
+            wbl = getFloorData(floor_json); //測試
+            JsonStr = serializer.Serialize(wbl);
+            Context.Response.Output.Write(JsonStr);
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetLocale(string filebase64)
         {
             byte[] newBytes = Convert.FromBase64String(filebase64);
@@ -1855,11 +1874,11 @@ namespace Tosapp_Tool
 
             //string ret = "";
             DataTable result = new DataTable("Locale");
-            
+
             result.Columns.Add("編號");
             result.Columns.Add("中文");
             result.Columns.Add("英文");
-            
+
             int num2 = 0;
             for (int i = 0; i < num - 1; i++)
             {
@@ -1952,11 +1971,11 @@ namespace Tosapp_Tool
                         dict[i, 0] = text;
                         dict[i, 1] = text1;
                         dict[i, 2] = text2;
-                        
+
                         //輸出html字串
-                        sw.WriteLine("<<<<"+ text+">>>>");
+                        sw.WriteLine("<<<<" + text + ">>>>");
                         sw.WriteLine(text2);
-                        sw.WriteLine(text1);                        
+                        sw.WriteLine(text1);
 
                         //dict_locale_csv.Add(text, text2);
                         //dict_locale_csv_eng.Add(text, text1);
@@ -2005,7 +2024,7 @@ namespace Tosapp_Tool
 
             foreach (KeyValuePair<string, string> item in dict_locale_csv)
             {
-                var row = result.NewRow();                
+                var row = result.NewRow();
                 row["編號"] = item.Key;
                 row["中文"] = item.Value;
                 row["英文"] = dict_locale_csv_eng[item.Key];
@@ -2038,7 +2057,7 @@ namespace Tosapp_Tool
         /// <param name="sheetName">要導入的excel的sheet的名稱</param>
         /// <returns>導入數據行數(包含列名那一行)</returns>
         public int DataTableToExcel(DataTable data, string sheetName, bool isColumnWritten)
-        {            
+        {
             //fileName = @"E:\11.xlsx";
             fileName = Path.GetTempFileName();
             int i = 0;
@@ -2048,7 +2067,7 @@ namespace Tosapp_Tool
 
             FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
             //if (fileName.IndexOf(".xlsx") > 0) // 2007版本
-                workbook = new XSSFWorkbook();
+            workbook = new XSSFWorkbook();
             //else if (fileName.IndexOf(".xls") > 0) // 2003版本
             //    workbook = new HSSFWorkbook();
 
@@ -2097,7 +2116,7 @@ namespace Tosapp_Tool
         }
 
         protected void flushxlsxfile()
-        {            
+        {
             var bufferSize = 102400;
             var buffer = new byte[bufferSize];
             var fs = new FileStream(fileName,
@@ -2135,7 +2154,7 @@ namespace Tosapp_Tool
             string timeStamp = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds).ToString();
 
             StreamWriter monster = new StreamWriter(Server.MapPath("~/json/") + "/Monster_" + timeStamp + ".txt");
-            
+
             string tbl_title;
 
             tbl_title = "";
@@ -2165,19 +2184,19 @@ namespace Tosapp_Tool
         [WebMethod]
         public string GetAttribute(string MonsterID)
         {
-            string attr = "", attr_type = "", realMonsterID ="";
+            string attr = "", attr_type = "", realMonsterID = "";
 
             MonsterID = MonsterID.Trim();
             realMonsterID = MonsterID;
             DataTable dt_monsters, dt_monsterSkins;
             dt_monsters = TxtConvertToDataTable("~/Monster.txt", "Monster", "|");
             dt_monsterSkins = TxtConvertToDataTable("~/monsterSkins.txt", "monsterSkins", "|");
-            if ((MonsterID.Substring(0, 1) == "6")&&(MonsterID.Length == 4))
+            if ((MonsterID.Substring(0, 1) == "6") && (MonsterID.Length == 4))
             {
                 var query_skin = from c in dt_monsterSkins.AsEnumerable()
                                  where c.Field<string>("col_1") == MonsterID.Substring(1, 3)
                                  select c;
-                foreach(DataRow dr in query_skin)
+                foreach (DataRow dr in query_skin)
                 {
                     realMonsterID = dr[1].ToString();
                 }
@@ -2202,7 +2221,7 @@ namespace Tosapp_Tool
             {
                 Context.Response.Output.Write("testtesttesttest");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 mes = e.Message.ToString();
             }
