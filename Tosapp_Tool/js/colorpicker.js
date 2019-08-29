@@ -131,6 +131,24 @@
 				$(document).unbind('mousemove', moveIncrement);
 				return false;
 			},
+			clickIncrement = function (ev) {
+				var field = $(this).parent().find('input').focus();
+				var current = {
+					el: $(this).parent().addClass('colorpicker_slider'),
+					max: this.parentNode.className.indexOf('_hsb_h') > 0 ? 360 : (this.parentNode.className.indexOf('_hsb') > 0 ? 100 : 255),
+					y: ev.pageY,
+					field: field,
+					val: parseInt(field.val(), 10),
+					preview: $(this).parent().parent().data('colorpicker').livePreview					
+				};
+				current.field.val(Math.max(0, Math.min(current.max, parseInt(current.val + ev.pageY - current.y, 10))));
+				if (current.preview) {
+					change.apply(current.field.get(0), [true]);
+				}
+				change.apply(current.field.get(0), [true]);
+				current.el.removeClass('colorpicker_slider').find('input').focus();
+				return false;
+			},
 			downHue = function (ev) {
 				var current = {
 					cal: $(this).parent(),
@@ -156,6 +174,24 @@
 				fillHexFields(ev.data.cal.data('colorpicker').color, ev.data.cal.get(0));
 				$(document).unbind('mouseup', upHue);
 				$(document).unbind('mousemove', moveHue);
+				return false;
+			},
+			clickHue = function (ev) {
+				var current = {
+					cal: $(this).parent(),
+					y: $(this).offset().top
+				};
+				current.preview = current.cal.data('colorpicker').livePreview;
+				change.apply(
+					current.cal.data('colorpicker')
+						.fields
+						.eq(4)
+						.val(parseInt(360*(150 - Math.max(0,Math.min(150,(ev.pageY - current.y))))/150, 10))
+						.get(0),
+					[current.preview]
+				);
+				fillRGBFields(current.cal.data('colorpicker').color, current.cal.get(0));
+				fillHexFields(current.cal.data('colorpicker').color, current.cal.get(0));
 				return false;
 			},
 			downSelector = function (ev) {
@@ -186,6 +222,27 @@
 				fillHexFields(ev.data.cal.data('colorpicker').color, ev.data.cal.get(0));
 				$(document).unbind('mouseup', upSelector);
 				$(document).unbind('mousemove', moveSelector);
+				return false;
+			},
+			clickSelector = function (ev) {
+				var current = {
+					cal: $(this).parent(),
+					pos: $(this).offset()
+				};
+				current.preview = current.cal.data('colorpicker').livePreview;
+				change.apply(
+					current.cal.data('colorpicker')
+						.fields
+						.eq(6)
+						.val(parseInt(100*(150 - Math.max(0,Math.min(150,(ev.pageY - current.pos.top))))/150, 10))
+						.end()
+						.eq(5)
+						.val(parseInt(100*(Math.max(0,Math.min(150,(ev.pageX - current.pos.left))))/150, 10))
+						.get(0),
+					[current.preview]
+				);
+				fillRGBFields(current.cal.data('colorpicker').color, current.cal.get(0));
+				fillHexFields(current.cal.data('colorpicker').color, current.cal.get(0));
 				return false;
 			},
 			enterSubmit = function (ev) {
@@ -404,11 +461,13 @@
 						cal
 							.find('span').bind('mousedown', downIncrement).end()
 							.find('>div.colorpicker_current_color').bind('click', restoreOriginal);
-						options.selector = cal.find('div.colorpicker_color').bind('mousedown', downSelector);
+						options.selector = cal.find('div.colorpicker_color').bind('mousedown', downSelector)
+						options.selector = cal.find('div.colorpicker_color').bind('click', clickSelector);
 						options.selectorIndic = options.selector.find('div div');
 						options.el = this;
 						options.hue = cal.find('div.colorpicker_hue div');
 						cal.find('div.colorpicker_hue').bind('mousedown', downHue);
+						cal.find('div.colorpicker_hue').bind('click', clickHue);
 						options.newColor = cal.find('div.colorpicker_new_color');
 						options.currentColor = cal.find('div.colorpicker_current_color');
 						cal.data('colorpicker', options);

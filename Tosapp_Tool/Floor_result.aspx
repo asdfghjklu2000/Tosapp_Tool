@@ -17,6 +17,7 @@
                 document.write(localStorage["htmlstring"]);
             else
                 document.write("資訊傳遞錯誤！請回到輸入頁面重新輸入：<a href='Floor_Data.aspx'>關卡資訊產生器</a>");
+            return false;
         });
     </script>
 </head>

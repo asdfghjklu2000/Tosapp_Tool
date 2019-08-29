@@ -14,6 +14,23 @@
     <script type="text/javascript" src="js/layout.js?ver=1.0.2"></script>
 
     <style>
+		.submitButton{
+			border:0;
+			background-color:#003C9D;
+			color:#fff;
+			border-radius:10px;
+			border:2px #fff solid;
+			cursor:pointer;
+			width:150px;
+			height:50px;
+		}
+		  
+		.submitButton:hover{
+			color:#003C9D;
+			background-color:#fff;
+			border:2px #003C9D solid;
+		}
+		
         .signin_box {
             /*width: 320px;*/
             /*max-width: 99%;
@@ -96,12 +113,12 @@
                     <br />
                     <br />
 
-                    <input type="button" id="submitHtmlButton" name="submitHtmlButton" value="轉換Html" onclick="showtype(1)"/>&nbsp&nbsp
-                    <input type="button" id="submitWikiButton" name="submitWikiButton" value="轉換Wikia語法" onclick="showtype(2)"/>&nbsp&nbsp
-                    <input type="button" id="submitBahaButton" name="submitBahaButton" value="轉換巴哈語法" onclick="showtype(3)"/><br />
-                    <input type="button" id="submitWiki2BahaButton" name="submitWiki2BahaButton" value="維基轉巴哈" onclick="showtype(6)"/>
-                    <input type="button" id="submitJsonButton" name="submitJsonButton" value="自定義JSON" onclick="showtype(5)"/>
-                    <input type="button" id="submitWiki2JsonButton" name="submitWiki2JsonButton" value="維基轉JSON" onclick="showtype(7)"/>
+                    <input class="submitButton" type="button" id="submitHtmlButton" name="submitHtmlButton" value="轉換Html" onclick="showtype(1)"/>&nbsp&nbsp
+                    <input class="submitButton" type="button" id="submitWikiButton" name="submitWikiButton" value="轉換Wikia語法" onclick="showtype(2)"/>&nbsp&nbsp
+                    <input class="submitButton" type="button" id="submitBahaButton" name="submitBahaButton" value="轉換巴哈語法" onclick="showtype(3)"/><br />
+                    <input class="submitButton" type="button" id="submitWiki2BahaButton" name="submitWiki2BahaButton" value="維基轉巴哈" onclick="showtype(6)"/>&nbsp&nbsp
+                    <input class="submitButton" type="button" id="submitJsonButton" name="submitJsonButton" value="自定義JSON" onclick="showtype(5)"/>&nbsp&nbsp
+                    <input class="submitButton" type="button" id="submitWiki2JsonButton" name="submitWiki2JsonButton" value="維基轉JSON" onclick="showtype(7)"/>
 
                     <br /><br />
                     <label id="lbl_remind_str">※Color Picker在行動裝置上可能無法直接點選顏色，請直接輸入顏色代碼，Color Picker會即時顯示對應顏色，確定後點按Color Picker右下角彩虹圓點即可關閉Color Picker</label>
