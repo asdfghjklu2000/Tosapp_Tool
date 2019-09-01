@@ -3,11 +3,11 @@
 <asp:Content ID="MainContent" ContentPlaceHolderID="FloorDataContentPlaceHolder" runat="Server">
     <%--<script src="Assets/js/jquery-2.1.4.min.js"></script>--%>
     <link rel="stylesheet" href="css/colorpicker.css" type="text/css" />
-    <%--<link rel="stylesheet" media="screen" type="text/css" href="css/layout.css" />--%>
-    <script src="Assets/js/bootstrap.min.js"></script>
-    <script src="js/jquery.loading.min.js"></script>
+<%--    <link rel="stylesheet" media="screen" type="text/css" href="css/layout.css" />
+    <script src="Assets/js/bootstrap.min.js"></script>--%>
+    <%--<script src="js/jquery.loading.min.js"></script>
     <%--<script src="js/Ted-ICU.js"></script>--%>
-    <script type="text/javascript" src="js/jquery.js"></script>
+    <%--<script type="text/javascript" src="js/jquery.js"></script>--%>
 	<script type="text/javascript" src="js/colorpicker.js"></script>
     <script type="text/javascript" src="js/eye.js"></script>
     <script type="text/javascript" src="js/utils.js"></script>
@@ -121,7 +121,7 @@
                     <input class="submitButton" type="button" id="submitWiki2JsonButton" name="submitWiki2JsonButton" value="維基轉JSON" onclick="showtype(7)"/>
 
                     <br /><br />
-                    <label id="lbl_remind_str">※Color Picker在行動裝置上可能無法直接點選顏色，請直接輸入顏色代碼，Color Picker會即時顯示對應顏色，確定後點按Color Picker右下角彩虹圓點即可關閉Color Picker</label>
+                    <label id="lbl_remind_str">※Color Picker在左側點選區選完後，確認點按Color Picker右下角彩虹圓點即可關閉Color Picker</label>
                     <br />
                     <%--<div id="result"></div>--%>
                     <%--<asp:TextBox ID="txt_floor_name" runat="server" Height="16px" Width="364px" TextMode="SingleLine"></asp:TextBox>

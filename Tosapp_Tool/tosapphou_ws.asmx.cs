@@ -1489,12 +1489,12 @@ namespace Tosapp_Tool
                 title_word_color = arg_title_word_color;
             }
 
-            html_head += "<html>";
-            html_head += "<title></title>";
-            html_head += "<head>";
-            html_head += "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
-            html_head += "</head>";
-            html_head += "<body>";
+            //html_head += "<html>";
+            //html_head += "<title></title>";
+            //html_head += "<head>";
+            //html_head += "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
+            //html_head += "</head>";
+            //html_head += "<body>";
             html_head += "<p>※熾天使關卡資訊產生器 Design by Alex Hou</p>";
 
             html_text += html_head;
@@ -1625,8 +1625,8 @@ namespace Tosapp_Tool
 
             html_text += "<p>※熾天使關卡資訊產生器 Design by Alex Hou<br>Copyright © 2013-2015 Seraphim Raiders All rights reserved.</p>";
 
-            html_text += "</body>";
-            html_text += "</html>";
+            //html_text += "</body>";
+            //html_text += "</html>";
 
             if ((showtype != 1) && (showtype != 2) && (showtype != 3))
                 html_text = "";
