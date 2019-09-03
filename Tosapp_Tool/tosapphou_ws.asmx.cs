@@ -2087,8 +2087,20 @@ namespace Tosapp_Tool
             string floor_json = "", JsonStr = "";
             floor_json = arg_floor_json;
             List<WaveBasic> wbl;
-            wbl = getFloorData(floor_json); //測試
-            JsonStr = serializer.Serialize(wbl);
+            if (floor_json.Contains("\"respond\""))
+            {
+                wbl = getFloorData(floor_json); //測試
+                JsonStr = serializer.Serialize(wbl);
+            }
+            else if (floor_json.Contains("{{關卡數據"))
+            {
+                wbl = getFloorDataByWikiaCode(floor_json); //測試
+                JsonStr = serializer.Serialize(wbl);
+            }
+            else if (floor_json.Contains("\"WaveId\""))
+            {
+                JsonStr = floor_json;
+            }
             Context.Response.Output.Write(JsonStr);
         }
 
