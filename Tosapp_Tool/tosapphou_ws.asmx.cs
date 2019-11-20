@@ -838,6 +838,18 @@ namespace Tosapp_Tool
                         string v = tmpMatch.Groups[1].Value;
                         return "|IniCD=" + v;
                     });
+                    //虛影特性數字
+                    templine = Regex.Replace(templine, @"\{\{特性\/突擊\|atk\=(\d*)\|(\d*)\%\}\}", delegate (Match tmpMatch)
+                    {
+                        string v = tmpMatch.Groups[1].Value;
+                        string p = tmpMatch.Groups[2].Value;
+                        return v + " (" + p + "%)";
+                    });
+                    templine = Regex.Replace(templine, @"\{\{特性\|atk\=(\d*)\}\}", delegate (Match tmpMatch)
+                    {
+                        string v = tmpMatch.Groups[1].Value;
+                        return v;
+                    });
 
                     //1.設定層數
                     match = Regex.Match(templine, @"stage\=([^\|\{\}]*)");
