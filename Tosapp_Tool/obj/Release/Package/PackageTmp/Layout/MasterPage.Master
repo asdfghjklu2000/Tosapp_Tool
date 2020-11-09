@@ -1,0 +1,136 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="MasterPage.master.cs" Inherits="Tosapp_Tool.Layout.MasterPage" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="text/html" content="IE=edge,chrome=1" />
+<meta charset="utf-8"/>
+    <title>熾天使Seraphim - 工具區</title>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+    <link rel="shortcut icon" type="image/x-icon" href="Assets/images/favicon.ico" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+    <!-- bootstrap & fontawesome -->
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../assets/font-awesome/4.5.0/css/font-awesome.min.css" />
+
+    <!-- page specific plugin styles -->
+
+    <!-- text fonts -->
+    <link rel="stylesheet" href="../assets/css/fonts.googleapis.com.css" />
+
+    <!-- ace styles -->
+    <link rel="stylesheet" href="../assets/css/ace.min.css" class="ace-main-stylesheet"/>
+
+<%--    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="../assets/css/ace-part2.min.css" class="ace-main-stylesheet" />
+    <![endif]-->
+    
+    <!--<link rel="stylesheet" href="../assets/css/ace-skins.min.css" />
+    <link rel="stylesheet" href="../assets/css/ace-rtl.min.css" />-->
+
+    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="../assets/css/ace-ie.min.css" />
+    <![endif]-->--%>
+
+    <!-- inline styles related to this page -->
+
+    <!-- ace settings handler -->
+    <script src="../assets/js/ace.min.js"></script>
+   <%--  <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+
+    <!--[if lte IE 8]>
+		<script src="../assets/js/html5shiv.min.js"></script>
+		<script src="../assets/js/respond.min.js"></script>
+		<![endif]-->--%>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            margin: 0px;
+        }
+
+        .EICUContainer {
+            height: 90%;
+            width: 99%;
+            margin: 0px;
+        }
+
+        #notifications {
+            cursor: pointer;
+            position: fixed;
+            right: 0px;
+            z-index: 9999;
+            bottom: 0px;
+            margin-bottom: 22px;
+            margin-right: 15px;
+            max-width: 300px;
+        }
+             .imgs {
+            min-width: 310px;
+            min-height: 220px;
+            padding: 0;
+        }
+    </style> 
+    <script src="../Assets/js/jquery-2.1.4.min.js"></script>
+</head>
+<body class="no-skin">
+    <div id="navbar" class="navbar navbar-default navbar-collapse h-navbar ace-save-state">
+        <div class="navbar-container ace-save-state" id="navbar-container">            
+            <nav role="navigation" class="navbar-menu pull-left navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <%  Newtonsoft.Json.Linq.JArray ja = new Newtonsoft.Json.Linq.JArray();
+                        Newtonsoft.Json.Linq.JObject jo;
+
+                        jo = new Newtonsoft.Json.Linq.JObject();
+                        jo["liid"] = "li_Floor_Data";
+                        jo["title"] = "關卡資訊產生器";
+                        jo["href"] = "/Floor_Data";
+                        jo["icon"] = "<i class=\"ace-icon fa fa-exchange\"></i>";
+                        ja.Add(jo);
+
+                        jo = new Newtonsoft.Json.Linq.JObject();
+                        jo["liid"] = "li_Locale_Parser";
+                        jo["title"] = "字串檔轉換器";
+                        jo["href"] = "/Locale_Parser";
+                        jo["icon"] = "<i class=\"ace-icon fa fa-book\"></i>";
+                        ja.Add(jo);
+
+                        jo = new Newtonsoft.Json.Linq.JObject();
+                        jo["liid"] = "li_StageDetail";
+                        jo["title"] = "每日關卡成就查詢(中文版)";
+                        jo["href"] = "/StageDetail";
+                        jo["icon"] = "<i class=\"ace-icon fa fa-info-circle\"></i>";
+                        ja.Add(jo);
+
+                        jo = new Newtonsoft.Json.Linq.JObject();
+                        jo["liid"] = "li_CardQuery";
+                        jo["title"] = "卡片資訊查詢器(施工中)";
+                        jo["href"] = "/Floor_Data";
+                        jo["icon"] = "<i class=\"ace-icon fa fa-lock\"></i>";
+                        ja.Add(jo);
+                        %>
+                    <% foreach (var k in ja)
+                        { %>
+                        <li class="sidebar-collapse" id="<%=k["liid"] %>">
+                            <a href="<%=k["href"] %>" id="tICU" title="<%=k["title"] %>">
+                                <%=k["icon"] %><strong><%=k["title"] %></strong>
+                            </a>
+                        </li>
+                    <% } %>
+                    <%--<li class="sidebar-collapse" id="li_Floor_Data">
+                        <a href="/Floor_Data" id="FICU" title="關卡資訊產生器">
+                            <i class="ace-icon fa fa-exchange"></i><strong>關卡資訊產生器</strong>
+                        </a>
+                    </li>--%>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="EICUContainer">
+        <asp:ContentPlaceHolder ID="FloorDataContentPlaceHolder" runat="server"></asp:ContentPlaceHolder>
+    </div>
+</body>
+</html>
