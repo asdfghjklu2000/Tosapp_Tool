@@ -34,29 +34,19 @@ namespace Tosapp_Tool
         public Dictionary<string, string> dict_locale_csv = new Dictionary<string, string>();
         public Dictionary<string, string> dict_locale_csv_eng = new Dictionary<string, string>();
         public Dictionary<string, Monster> dic_monster_data = new Dictionary<string, Monster>();
-        JavaScriptSerializer serializer = new JavaScriptSerializer();
-        public static byte[] ReadFile(string filePath)
-        {
-            byte[] buffer;
-            FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            try
-            {
-                int length = (int)fileStream.Length;  // get file length
-                buffer = new byte[length];            // create buffer
-                int count;                            // actual number of bytes read
-                int sum = 0;                          // total number of bytes read
+        public JObject jo_monster = new JObject();
 
-                // read until Read method returns 0 (end of the stream has been reached)
-                while ((count = fileStream.Read(buffer, sum, length - sum)) > 0)
-                    sum += count;  // sum is a buffer offset for next reading
-            }
-            finally
-            {
-                fileStream.Close();
-            }
-            return buffer;
+        #region 建構元
+        public tosapphou_ws()
+        {
+
         }
-        protected void loadMonsterData2()
+        #endregion
+        
+        /// <summary>
+        /// 載入召喚獸資訊
+        /// </summary>
+        private void loadMonsterData()
         {
             DataTable dt_monster;
             Monster M_temp;
@@ -117,60 +107,7 @@ namespace Tosapp_Tool
             }
         }
 
-        protected DataTable TxtConvertToDataTable(string File, string TableName, string delimiter)
-        {
-            DataTable dt = new DataTable();
-            DataSet ds = new DataSet();
-            StreamReader s = new StreamReader(Server.MapPath(File), System.Text.Encoding.UTF8);
-            //string ss = s.ReadLine();//skip the first line
-            string[] columns = s.ReadLine().Split(delimiter.ToCharArray());
-            ds.Tables.Add(TableName);
-            foreach (string col in columns)
-            {
-                bool added = false;
-                string next = "";
-                int i = 0;
-                while (!added)
-                {
-                    string columnname = col + next;
-                    columnname = columnname.Replace("#", "");
-                    columnname = columnname.Replace("'", "");
-                    columnname = columnname.Replace("&", "");
-
-                    if (!ds.Tables[TableName].Columns.Contains(columnname))
-                    {
-                        ds.Tables[TableName].Columns.Add(columnname.ToUpper());
-                        added = true;
-                    }
-                    else
-                    {
-                        i++;
-                        next = "_" + i.ToString();
-                    }
-                }
-            }
-
-            string AllData = s.ReadToEnd();
-            string[] rows = AllData.Split("\n".ToCharArray());
-
-            foreach (string r in rows)
-            {
-                if (r.Trim() != "")
-                {
-                    string[] items = r.Split(delimiter.ToCharArray());
-                    ds.Tables[TableName].Rows.Add(items);
-                }
-            }
-
-            s.Close();
-            s.Dispose();
-
-            dt = ds.Tables[0];
-
-            return dt;
-        }
-
-        protected void loadLocaleCsv2()
+        private void localLocaleCsv()
         {
             MCSVFile m = new MCSVFile();
             m.LoadBinaryAsset(ReadFile(Server.MapPath("~/LOCALE.csv.txt")));
@@ -224,29 +161,10 @@ namespace Tosapp_Tool
             }
         }
 
-        protected string readLocaleValue(string key, bool isZh)
-        {
-            try
-            {
-                if (isZh)
-                {
-                    return dict_locale_csv[key];
-                }
-                else
-                {
-                    return dict_locale_csv_eng[key];
-                }
-            }
-            catch (Exception e)
-            {
-                if (isZh)
-                    return "無此字串";
-                else
-                    return "Can't Find Value";
-            }
-        }
-
-        protected void loadBossSkill2()
+        /// <summary>
+        /// 載入敵技及圖片html
+        /// </summary>
+        private void loadBossSkill()
         {
             DataTable dt_bossskill;
             dt_bossskill = TxtConvertToDataTable("~/BossSkill.txt", "BossSkill", "|");
@@ -282,13 +200,13 @@ namespace Tosapp_Tool
             }
         }
 
-        [WebMethod]
+        #region 每日自動產生關卡成就查詢使用(現已暫搬至單機程式更新)
         public string getZone()
         {
             string HtmlStr = "";
             try
             {
-                loadLocaleCsv2();
+                localLocaleCsv();
                 var qry_locale = from dr in dict_locale_csv
                                  where dr.Key.StartsWith("ZONE_") && dr.Value.Trim() != ""
                                  select dr;
@@ -313,7 +231,6 @@ namespace Tosapp_Tool
             return Convert.ToBase64String(enc.GetBytes(HtmlStr));
         }
 
-        [WebMethod]
         public string getStageDetail(string zone)
         {
             string HtmlStr = "";
@@ -409,7 +326,6 @@ namespace Tosapp_Tool
             return Convert.ToBase64String(enc.GetBytes(HtmlStr));
         }
 
-        [WebMethod]
         public string getStageDetailEn(string zone)
         {
             string HtmlStr = "";
@@ -499,7 +415,6 @@ namespace Tosapp_Tool
             return Convert.ToBase64String(enc.GetBytes(HtmlStr));
         }
 
-        [WebMethod]
         public string getStageDetailAll()
         {
             string HtmlStr = "";
@@ -511,7 +426,7 @@ namespace Tosapp_Tool
                 dt_floorList = TxtConvertToDataTable("~/floorList.txt", "stageList", "|");
                 dt_floorStars = TxtConvertToDataTable("~/floorStars.txt", "stageList", "|");
                 dt_floorStarRewards = TxtConvertToDataTable("~/floorStarRewards.txt", "stageList", "|");
-                loadLocaleCsv2();
+                localLocaleCsv();
                 var qry_locale = from dr in dict_locale_csv
                                  where dr.Key.StartsWith("ZONE_") && dr.Value.Trim() != ""
                                  select dr;
@@ -608,7 +523,6 @@ namespace Tosapp_Tool
             return HtmlStr;
         }
 
-        [WebMethod]
         public string getStageDetailAllEn()
         {
             string HtmlStr = "";
@@ -620,7 +534,7 @@ namespace Tosapp_Tool
                 dt_floorList = TxtConvertToDataTable("~/floorList_en.txt", "stageList", "|");
                 dt_floorStars = TxtConvertToDataTable("~/floorStars_en.txt", "stageList", "|");
                 dt_floorStarRewards = TxtConvertToDataTable("~/floorStarRewards_en.txt", "stageList", "|");
-                loadLocaleCsv2();
+                localLocaleCsv();
                 var qry_locale = from dr in dict_locale_csv
                                  where dr.Key.StartsWith("ZONE_") && dr.Value.Trim() != ""
                                  select dr;
@@ -716,737 +630,14 @@ namespace Tosapp_Tool
 
             return HtmlStr;
         }
-
-        protected List<WaveBasic> getFloorData(string floor_json)
-        {
-            JObject jo_all, jo_data, jo_waves, jo_enemies;
-            JArray ja_waves, ja_enemies;
-            jo_all = JObject.Parse(floor_json);
-            jo_data = JObject.Parse(jo_all.GetValue("data").ToString());
-            ja_waves = JArray.Parse(jo_data.GetValue("waves").ToString());
-
-            //JObject jo_waves;
-            //JArray ja_enemies;
-            //JObject jo_enemies;
-
-            int wavedetialid = 0;
-            int checkNextEnemy = 0;
-            string multiblood_flag = "";
-            string enemyHtml = "";
-
-            //WaveBasic包含一個wave所有資訊；以List來串接所有wave
-            List<WaveBasic> wbl = new List<WaveBasic>();
-            WaveBasic temp_wb;
-
-            //最外層：wave的陣列，分離出每一wave
-            for (int i = 0; i < ja_waves.Count; i++)
-            {
-                //temp_wb為當前wave的物件，temp_wb.WaveDetailList為這個層所出現的每位敵人資訊集合
-                temp_wb = new WaveBasic();
-                temp_wb.WaveId = (i + 1).ToString();
-                List<WaveDetail> temp_wdl = new List<WaveDetail>();
-                wavedetialid = 0;
-
-                jo_waves = JObject.Parse(ja_waves[i].ToString());
-                ja_enemies = JArray.Parse(jo_waves.GetValue("enemies").ToString());
-
-                //記錄當層的虛影特性/場景特性
-                temp_wb.WaveSkill = jo_waves.GetValue("waveSkillId") != null ? jo_waves.GetValue("waveSkillId").ToString() : "0";
-
-                //skillList為空時，代表不為多階段魔王(爆衣魔王)，for 一般敵人(含多血怪處理方式)
-                if ((JObject.Parse(ja_enemies[0].ToString())).GetValue("skillList").ToString() == "[]")
-                {
-                    //內層：敵人的陣列，對於每一層wave內的所有敵人進行提取資訊
-                    for (int j = 0; j < ja_enemies.Count; j++)
-                    {
-                        jo_enemies = JObject.Parse(ja_enemies[j].ToString());
-
-                        //用來判斷是否有多血/變身怪
-                        checkNextEnemy = 0;
-                        multiblood_flag = "X";
-                        //getEnemyObj
-                        getEnemyObj(jo_enemies, ref wavedetialid, ref checkNextEnemy, ref multiblood_flag, ref temp_wdl);
-                    }
-                    temp_wb.WaveDetailList = temp_wdl;
-                    wbl.Add(temp_wb);
-                }
-                //多階段魔王(像是吉爾伽美什)
-                else
-                {
-                    int skillListCnt = JArray.Parse((JObject.Parse(ja_enemies[0].ToString())).GetValue("skillList").ToString()).Count();
-                    for (int s = 0; s < skillListCnt; s++)
-                    {
-                        temp_wb = new WaveBasic();
-                        temp_wb.WaveId = (i + 1).ToString() + "-" + (s + 1).ToString();
-                        temp_wb.WaveSkill = jo_waves.GetValue("waveSkillId") != null ? jo_waves.GetValue("waveSkillId").ToString() : "0";
-                        temp_wdl = new List<WaveDetail>();
-                        wavedetialid = 0;
-
-                        //for 本體+左右怪處理方式
-                        for (int j = 0; j < ja_enemies.Count; j++)
-                        {
-                            string new_char = "";
-                            //int no_show_cnt = 0;
-
-                            jo_enemies = JObject.Parse(ja_enemies[j].ToString());
-                            new_char = JArray.Parse(jo_enemies.GetValue("skillList").ToString())[skillListCnt - 1 - s].ToString();
-
-                            jo_enemies.Remove("characteristic");
-                            jo_enemies.Add("characteristic", new_char);
-
-                            checkNextEnemy = 0;
-                            multiblood_flag = "X";
-
-                            if (new_char != "0")
-                            {
-                                getEnemyObj(jo_enemies, ref wavedetialid, ref checkNextEnemy, ref multiblood_flag, ref temp_wdl);
-                            }
-                        }
-                        temp_wb.WaveDetailList = temp_wdl;
-                        wbl.Add(temp_wb);
-                    }
-                }
-            }
-            return wbl;
-        }
-
-        protected List<WaveBasic> getFloorDataByWikiaCode(string wikia_code)
-        {
-            string[] wikialine = wikia_code.Split('\n');
-            //WaveBasic包含一個wave所有資訊；以List來串接所有wave
-            List<WaveBasic> wbl = new List<WaveBasic>();
-            WaveBasic temp_wb = new WaveBasic();
-            List<WaveDetail> temp_wdl = new List<WaveDetail>();
-            WaveDetail temp_wd = new WaveDetail();
-
-            Match match;
-            string templine = "";
-            string stage = "";
-            temp_wb.WaveId = "";
-            int wavecount = 0;
-            string multiBlookFlag = "X";
-            foreach (string line in wikialine)
-            {
-                if (line.Contains("{{關卡數據|"))
-                {
-                    //前置作業，先把參數中的小模版替換成一般參數型態
-                    templine = line;
-                    templine = Regex.Replace(templine, @"\{\{[雙三]血\}\}", "|MultiB=N");
-                    templine = Regex.Replace(templine, @"\{\{前置\}\}", "|MultiB=C");
-                    templine = Regex.Replace(templine, @"\{\{初始CD\|(\d*)\}\}", delegate (Match tmpMatch)
-                    {
-                        string v = tmpMatch.Groups[1].Value;
-                        return "|IniCD=" + v;
-                    });
-                    //虛影特性數字
-                    templine = Regex.Replace(templine, @"\{\{特性\/突擊\|atk\=(\d*)\|(\d*)\%\}\}", delegate (Match tmpMatch)
-                    {
-                        string v = tmpMatch.Groups[1].Value;
-                        string p = tmpMatch.Groups[2].Value;
-                        return v + " (" + p + "%)";
-                    });
-                    templine = Regex.Replace(templine, @"\{\{特性\|atk\=(\d*)\}\}", delegate (Match tmpMatch)
-                    {
-                        string v = tmpMatch.Groups[1].Value;
-                        return v;
-                    });
-
-                    //1.設定層數
-                    match = Regex.Match(templine, @"stage\=([^\|\{\}]*)");
-                    if ((match.Success))
-                    {
-                        if ((match.Groups[1].Value != "") && (match.Groups[1].Value != stage))
-                        {
-                            //如果上一組WaveBasic是有成員的，就塞入wbl
-                            if (temp_wdl.Count > 0)
-                            {
-                                temp_wb.WaveDetailList = temp_wdl;
-                                wbl.Add(temp_wb);
-                            }
-
-                            temp_wb = new WaveBasic();
-                            temp_wb.WaveId = match.Groups[1].Value;
-                            temp_wdl = new List<WaveDetail>();
-                            wavecount = 0;
-                            multiBlookFlag = "X";
-                            stage = temp_wb.WaveId;
-                        }
-                    }
-                    //無層數就自成一層
-                    else
-                    {
-                        //如果上一組WaveBasic是有成員的，就塞入wbl
-                        if (temp_wdl.Count > 0)
-                        {
-                            temp_wb.WaveDetailList = temp_wdl;
-                            wbl.Add(temp_wb);
-                        }
-
-                        temp_wb = new WaveBasic();
-                        temp_wb.WaveId = "";
-                        temp_wdl = new List<WaveDetail>();
-                        wavecount = 0;
-                        multiBlookFlag = "X";
-                    }
-                    //2.虛影技能
-                    match = Regex.Match(templine, @"ws\=([^\|\{\}]*)");
-                    temp_wb.WaveSkill = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
-
-                    temp_wd = new WaveDetail();
-                    wavecount++;
-                    temp_wd.WaveDetailId = wavecount;
-
-                    //實做
-
-                    //3.敵人
-                    match = Regex.Match(templine, @"\|(\d+)\|");
-                    //先轉數字再轉回字串(因為維基會 lpad 0 )
-                    temp_wd.MonsterId = ((match.Success) && (match.Groups[1].Value != "")) ? (Int32.Parse(match.Groups[1].Value)).ToString() : "0";
-
-                    //4.攻擊
-                    match = Regex.Match(templine, @"damage\=([^\|\{\}]*)");
-                    temp_wd.AckNum = ((match.Success)&&(match.Groups[1].Value!="")) ? match.Groups[1].Value : "0";
-
-                    //5.防禦
-                    match = Regex.Match(templine, @"def\=([^\|\{\}]*)");
-                    temp_wd.DefNum = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
-
-                    //6.血量
-                    match = Regex.Match(templine, @"hp\=([^\|\{\}]*)");
-                    temp_wd.HpNum = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
-
-                    //7.CD
-                    match = Regex.Match(templine, @"turn\=([^\|\{\}]*)");
-                    temp_wd.Duration = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
-
-                    //8.初始CD
-                    match = Regex.Match(templine, @"IniCD\=([^\|\{\}]*)");
-                    temp_wd.IniDuration = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
-
-                    //9.掉落金幣
-                    match = Regex.Match(templine, @"coin\=([^\|\{\}]*)");
-                    temp_wd.DropCoin = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
-
-                    //10.掉落寶箱
-                    match = Regex.Match(templine, @"chest\=([^\|\{\}]*)");
-                    if ((match.Success) && (match.Groups[1].Value != ""))
-                    {
-                        temp_wd.DropType = "money";
-                        temp_wd.DropLevel = match.Groups[1].Value;
-                        temp_wd.DropId = "";
-                    }
-                    else
-                    {
-                        temp_wd.DropType = "無";
-                        temp_wd.DropLevel = "";
-                        temp_wd.DropId = "";
-                    }
-
-                    //11.掉落卡片&等級(目前只支援覆蓋掉掉落寶箱，無法同時顯示)
-                    match = Regex.Match(templine, @"lv\=([^\|\{\}]*)");
-                    if ((match.Success) && (match.Groups[1].Value != ""))
-                    {
-                        temp_wd.DropType = "monster";
-                        temp_wd.DropLevel = match.Groups[1].Value;
-                        match = Regex.Match(templine, @"drop\=([^\|\{\}]*)");
-                        temp_wd.DropId = match.Success ? (Int32.Parse(match.Groups[1].Value)).ToString() : temp_wd.MonsterId;
-                    }
-
-                    //12.敵人技能
-                    match = Regex.Match(templine, @"es\=([^\|\{\}]*)");
-                    temp_wd.EnemySkill = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
-
-                    //13.修羅場點數(未完成)
-                    temp_wd.PVEScore = "0";
-
-                    //14.敵人逃跑回合(未完成)
-                    temp_wd.EscapeRound = "0";
-
-                    //15.多血/前置判斷
-                    match = Regex.Match(templine, @"MultiB\=([^\|\{\}]*)");
-                    if ((match.Success) && (match.Groups[1].Value != ""))
-                        multiBlookFlag = match.Groups[1].Value;
-                    else
-                        multiBlookFlag = "X";
-                    temp_wd.MultiBloodFlag = multiBlookFlag;
-                    temp_wd.MultiBloodLevel = wavecount.ToString();
-
-                    temp_wdl.Add(temp_wd);                    
-                }
-            }
-            //最後一組WaveBasic，手動塞入wbl            
-            if (temp_wdl.Count > 0)
-            {
-                temp_wb.WaveDetailList = temp_wdl;
-                wbl.Add(temp_wb);
-            }
-
-                return wbl;
-        }
-
-        protected string genHtml(string floorName, string arg_title_color, string arg_title_word_color, string arg_floor_json, int showtype)
-        {
-            string html_head = "";
-            string html_text = "";
-            string title_color = "39393A";
-            string title_word_color = "FFD973";
-            string floor_json = "";
-            floor_json = arg_floor_json;
-
-            List<WaveBasic> wbl;
-            if ((showtype == 6)|| (showtype == 7))
-                wbl = getFloorDataByWikiaCode(floor_json); //測試
-            else
-                wbl = getFloorData(floor_json); //測試
-            
-
-            //JObject jo_all = JObject.Parse(floor_json);
-            //JObject jo_data = JObject.Parse(jo_all.GetValue("data").ToString());
-            //JArray ja_waves = JArray.Parse(jo_data.GetValue("waves").ToString());
-
-            string used_skill_html = "";
-
-            if (arg_title_color != "")
-            {
-                title_color = arg_title_color;
-            }
-            if (arg_title_word_color != "")
-            {
-                title_word_color = arg_title_word_color;
-            }
-
-            html_head += "<html>";
-            html_head += "<title></title>";
-            html_head += "<head>";
-            html_head += "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
-            html_head += "</head>";
-            html_head += "<body>";
-            html_head += "<p>※熾天使關卡資訊產生器 Design by Alex Hou</p>";
-
-            html_text += html_head;
-
-            #region 1.Html模式
-            if (showtype == 1)
-            {
-                html_text += "<table cellpadding=\"1\" cellspacing=\"1\" frame=\"border\" border=\"5\" style=\"font-family:微軟正黑體;background-image:url('/Seraphim.png');\">";
-                html_text += "<tr bgcolor=\"#" + title_color + "\"><td colspan=\"9\" align=\"center\"><font color=\"#" + title_word_color + "\"><b>" + floorName + "</b></font></td></tr>";
-                html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">層數</td><td align=\"center\">敵人</td><td align=\"center\">攻擊</td><td align=\"center\">CD </td><td align=\"center\">HP</td><td align=\"center\">防禦</td><td align=\"center\">掉落</td><td align=\"center\">金幣</td><td align=\"center\" width=\"200\">備註</td></tr>";
-
-                foreach (WaveBasic wb in wbl)
-                {
-                    html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
-                    foreach (WaveDetail wd in wb.WaveDetailList)
-                    {
-                        //行頭
-                        html_text += "<tr>";
-
-                        //第一行必須給欄寬
-                        if (wd.WaveDetailId == 1)
-                            html_text += "<td align=\"center\" rowspan=\"" + wb.WaveDetailList.Count().ToString() + "\">" + wb.WaveId + "</td>";
-
-                        //卡片id及名稱
-                        html_text += "<td align=\"center\" >";
-                        html_text += "<img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.MonsterId + ".png\">";
-                        html_text += "<br>";
-                        html_text += "<font color=\"3366FF\"><b>" + wd.MonsterId + "</b></font> .";
-                        html_text += "<a href=\"http://www.tosapp.tw/tos/no." + wd.MonsterId + ".html\">" + readLocaleValue("MONSTER_" + wd.MonsterId, true) + "</a>";
-                        html_text += "</td>";
-                        //卡片id及名稱
-
-                        //攻擊力
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.AckNum;
-                        html_text += "</td>";
-                        //攻擊力
-
-                        //CD
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "");
-                        html_text += "</td>";
-                        //CD
-
-                        //血量
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.HpNum;
-                        html_text += "</td>";
-                        //血量
-
-                        //防禦力
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.DefNum;
-                        html_text += "</td>";
-                        //防禦力
-
-                        //掉落
-                        html_text += "<td align=\"center\" >";
-                        if (wd.DropType == "money")
-                        {
-                            html_text += "<img width=\"40\" height=\"40\" src=\"http://www.tosapp.tw/static/image/common/tos/icon-all-016.png\">";
-                            html_text += "<br>×" + wd.DropLevel; //掉落寶箱
-                        }
-                        else if (wd.DropType == "monster")
-                        {
-                            html_text += wd.DropId;
-                            html_text += "<br><img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.DropId + ".png\">";
-                            html_text += "<br>Lv " + wd.DropLevel; //掉落卡片
-                        }
-                        else
-                        {
-                            html_text += "無";
-                        }
-                        html_text += wd.PVEScore != "0" ? ("<br>寶藏券：" + wd.PVEScore) : "";
-                        html_text += "</td>";
-                        //掉落
-
-                        //金幣
-                        html_text += "<td align=\"center\">";
-                        html_text += wd.DropCoin;
-                        html_text += "</td>";
-                        //金幣
-
-                        //備註
-                        html_text += "<td align=\"center\">";
-                        html_text += wd.EscapeRound != "0" ? ("<font color=\"#E7A400\"><b>※敵人會在 " + wd.EscapeRound + " 回合後離開</b></font><br>") : "";
-
-                        if (wd.MultiBloodFlag != "X")
-                        {
-                            html_text += "<font color=\"#FFBBBB\"><b>【";
-                            if (wd.MultiBloodFlag == "N")
-                                html_text += "多血第 ";
-                            else if (wd.MultiBloodFlag == "C")
-                                html_text += "變身第 ";
-                            html_text += wd.MultiBloodLevel + " 血條】</b></font><br>";
-                        }
-
-                        if (wd.EnemySkill != "0")
-                        {
-                            html_text += "【" + "<font color=\"#3366FF\"><b>" + wd.EnemySkill + "</b></font>." + dict_boss_skill[Int32.Parse(wd.EnemySkill), 1] + dict_boss_skill[Int32.Parse(wd.EnemySkill), 0] + "】"; ; //技能名稱
-                            used_skill_html += "<tr><td>" + wd.EnemySkill + "</td><td>" + dict_boss_skill[Int32.Parse(wd.EnemySkill), 0] + "</td><td>";
-                            used_skill_html += readLocaleValue("BOSS_DESC_" + wd.EnemySkill, true).Replace("\n", "<br>") + "</td></tr>";
-                        }
-                        html_text += "</td>";
-                        //備註
-
-                        //行尾
-                        html_text += "</tr>";
-                    }
-                }
-
-                html_text += "</table>";
-                html_text += "<br><br>";
-
-                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
-                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"3\" align=\"center\"><font color=\"#FFD973\"><b>技能說明</b></font></td></tr>";
-                html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">編號</td><td align=\"center\">名字</td><td align=\"center\" width=\"300\">技能</td></tr>" + used_skill_html;
-                html_text += "</table>";
-                html_text += "<br>";
-            }
-            #endregion
-            #region 2.Wiki模式
-            if (showtype == 2)
-            {
-                html_text += "<br><br>";
-                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
-                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>維基語法</b></font></td></tr>";
-
-                foreach (WaveBasic wb in wbl)
-                {
-                    //html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
-                    foreach (WaveDetail wd in wb.WaveDetailList)
-                    {
-                        html_text += "<tr><td>{{關卡數據";
-
-                        html_text += "|" + wd.MonsterId.PadLeft(3, '0');
-                        html_text += "|stage=" + (wd.WaveDetailId == 1 ? (wb.WaveId + (wd.MultiBloodFlag == "N" ? "{{" + num2chinese(wb.WaveDetailList.Count) + "血}}" : "") + (wd.MultiBloodFlag == "C" ? "{{前置}}" : "")) : "");
-                        html_text += "|damage=" + wd.AckNum;
-                        html_text += "|turn=" + wd.Duration + (wd.IniDuration != "0" ? ("{{初始CD|" + wd.IniDuration + "}}") : "");
-                        html_text += "|hp=" + wd.HpNum;
-                        html_text += "|def=" + wd.DefNum;
-                        html_text += "|coin=" + wd.DropCoin;
-                        html_text += (wd.DropType == "monster" ? ("|drop=" + wd.DropId.PadLeft(3, '0') + "|lv=" + wd.DropLevel) : "");
-                        html_text += (wd.DropType == "money" ? ("|chest=" + wd.DropLevel) : "");
-                        html_text += (wd.EnemySkill != "0" ? ("|es=" + wd.EnemySkill) : "");
-                        if (wd.WaveDetailId == 1)
-                            html_text += (wb.WaveSkill != "0" ? ("|ws=" + wb.WaveSkill) : "");
-
-                        html_text += "}}</td></tr>";
-                    }
-                }
-
-                //html_text += wikia_text;
-                html_text += "</table>";
-                html_text += "<br>";
-            }
-            #endregion
-            #region 3.巴哈模式
-            if (showtype == 3)
-            {
-                html_text += "<br><br>";
-                html_text += "<font color=\"#F03434\"><b>※使用說明：</b></font>此轉換功能產生之表格樣式為巴哈版友 路人∩(ゝω●)(<a href=\"https://home.gamer.com.tw/homeindex.php?owner=a37601416\" target=blank>a37601416</a>)所開發，如欲使用發文於巴哈姆特者，請先向 路人 詢問商借事宜再行使用※";
-                html_text += "<hr>";
-                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
-                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>巴哈語法</b></font></td></tr>";
-                html_text += "<tr><td colspan=\"1\" >";
-                html_text += "[table width=100% cellspacing=1 cellpadding=1 border=5 align=center]";
-                html_text += "<br>";
-                html_text += "[tr][td colspan=3 bgcolor=#333333 align=center][font=微軟正黑體][size=4][b][color=#ffffff]《"
-                    + floorName + "》[/color][/b][/size][/font][/td][/tr]";
-                html_text += "<br>";
-                html_text += "[tr bgcolor=#333333]";
-                html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]Battle[/color][/b][/size][/font][/td]";
-                html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人[/color][/b][/size][/font][/td]";
-                html_text += "[td align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人資訊[/color][/b][/size][/font][/td]";
-                html_text += "[/tr]";
-                foreach (WaveBasic wb in wbl)
-                {
-                    //html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
-                    foreach (WaveDetail wd in wb.WaveDetailList)
-                    {
-                        html_text += "<br>";
-                        html_text += "[tr]";
-                        if (wd.WaveDetailId == 1)
-                            html_text += "<br>[td rowspan=" + wb.WaveDetailList.Count + " width=8% bgcolor=#333333 align=center][font=微軟正黑體][size=3][b][color=#ffffff]"
-                                + wb.WaveId + (wd.MultiBloodFlag == "N" ? "<br>" + num2chinese(wb.WaveDetailList.Count) + "血" : "")
-                                + (wd.MultiBloodFlag == "C" ? "<br>前置" : "")
-                                + "[/color][/b][/size][/font][/td]";
-                        html_text += "<br>";
-                        html_text += "[td width=8%][img=https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.MonsterId + ".png][/td]";
-                        html_text += "<br>";
-
-                        html_text += "[td align=left]";
-                        //html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum.PadRight(10,' ').Replace(" ", "&nbsp")
-                        //    + "傷害 " + wd.AckNum.PadRight(6, ' ').Replace(" ", "&nbsp")
-                        //    + "CD " + (wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "")).PadRight(6, ' ').Replace(" ", "&nbsp") 
-                        //    + "防 " + wd.DefNum + "[/size][/font][/b]";
-                        html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum + "&nbsp&nbsp&nbsp"
-                            + "傷害 " + wd.AckNum + "&nbsp&nbsp&nbsp"
-                            + "CD " + wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "") + "&nbsp&nbsp&nbsp"
-                            + "防 " + wd.DefNum + "[/size][/font][/b]";
-                        html_text += "[hr]";
-                        html_text += "[div align=center][font=微軟正黑體][size=2][b]";
-                        html_text += readLocaleValue("BOSS_DESC_" + wd.EnemySkill, true).Replace("\n", "<br>");
-                        html_text += "[/b][/size][/font][/div]";
-                        html_text += "<br>";
-                        html_text += "[/td]";
-                        html_text += "<br>";
-                        html_text += "[/tr]";
-                    }
-                }
-                //html_text += wikia_text;
-                html_text += "[/table]";
-                html_text += "</td></tr>";
-                html_text += "</table>";
-                html_text += "<br>";
-            }
-            #endregion
-            #region 4.表格數值模式
-            if (showtype == 4)
-            {
-                html_text += "<table cellpadding=\"1\" cellspacing=\"1\" frame=\"border\" border=\"5\" style=\"font-family:微軟正黑體;background-image:url('/Seraphim.png');\">";
-                html_text += "<tr bgcolor=\"#" + title_color + "\"><td colspan=\"9\" align=\"center\"><font color=\"#" + title_word_color + "\"><b>" + floorName + "</b></font></td></tr>";
-                html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">層數</td><td align=\"center\">敵人</td><td align=\"center\">攻擊</td><td align=\"center\">CD </td><td align=\"center\">HP</td><td align=\"center\">防禦</td><td align=\"center\">掉落</td><td align=\"center\">金幣</td><td align=\"center\" width=\"200\">備註</td></tr>";
-
-                foreach (WaveBasic wb in wbl)
-                {
-                    html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
-                    foreach (WaveDetail wd in wb.WaveDetailList)
-                    {
-                        //行頭
-                        html_text += "<tr>";
-
-                        //第一行必須給欄寬
-                        if (wd.WaveDetailId == 1)
-                            html_text += "<td align=\"center\" rowspan=\"" + wb.WaveDetailList.Count().ToString() + "\">" + wb.WaveId + "</td>";
-
-                        //卡片id及名稱
-                        html_text += "<td align=\"center\" >";
-                        html_text += "<img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.MonsterId + ".png\">";
-                        html_text += "<br>";
-                        html_text += "<font color=\"3366FF\"><b>" + wd.MonsterId + "</b></font> .";
-                        html_text += "<a href=\"http://www.tosapp.tw/tos/no." + wd.MonsterId + ".html\">" + readLocaleValue("MONSTER_" + wd.MonsterId, true) + "</a>";
-                        html_text += "</td>";
-                        //卡片id及名稱
-
-                        //攻擊力
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.AckNum;
-                        html_text += "</td>";
-                        //攻擊力
-
-                        //CD
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "");
-                        html_text += "</td>";
-                        //CD
-
-                        //血量
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.HpNum;
-                        html_text += "</td>";
-                        //血量
-
-                        //防禦力
-                        html_text += "<td align=\"center\" >";
-                        html_text += wd.DefNum;
-                        html_text += "</td>";
-                        //防禦力
-
-                        //掉落
-                        html_text += "<td align=\"center\" >";
-                        if (wd.DropType == "money")
-                        {
-                            html_text += "<img width=\"40\" height=\"40\" src=\"http://www.tosapp.tw/static/image/common/tos/icon-all-016.png\">";
-                            html_text += "<br>×" + wd.DropLevel; //掉落寶箱
-                        }
-                        else if (wd.DropType == "monster")
-                        {
-                            html_text += wd.DropId;
-                            html_text += "<br><img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.DropId + ".png\">";
-                            html_text += "<br>Lv " + wd.DropLevel; //掉落卡片
-                        }
-                        else
-                        {
-                            html_text += "無";
-                        }
-                        html_text += wd.PVEScore != "0" ? ("<br>寶藏券：" + wd.PVEScore) : "";
-                        html_text += "</td>";
-                        //掉落
-
-                        //金幣
-                        html_text += "<td align=\"center\">";
-                        html_text += wd.DropCoin;
-                        html_text += "</td>";
-                        //金幣
-
-                        //備註
-                        html_text += "<td align=\"center\">";
-                        html_text += wd.EscapeRound != "0" ? ("<font color=\"#E7A400\"><b>※敵人會在 " + wd.EscapeRound + " 回合後離開</b></font><br>") : "";
-
-                        if (wd.MultiBloodFlag != "X")
-                        {
-                            html_text += "<font color=\"#FFBBBB\"><b>【";
-                            if (wd.MultiBloodFlag == "N")
-                                html_text += "多血第 ";
-                            else if (wd.MultiBloodFlag == "C")
-                                html_text += "變身第 ";
-                            html_text += wd.MultiBloodLevel + " 血條】</b></font><br>";
-                        }
-
-                        if (wd.EnemySkill != "0")
-                        {
-                            html_text += "【" + "<font color=\"#3366FF\"><b>" + wd.EnemySkill + "</b></font>." + dict_boss_skill[Int32.Parse(wd.EnemySkill), 1] + dict_boss_skill[Int32.Parse(wd.EnemySkill), 0] + "】"; ; //技能名稱
-                        }
-                        html_text += "</td>";
-                        //備註
-
-                        //行尾
-                        html_text += "</tr>";
-                    }
-                }
-
-                html_text += "</table>";
-                html_text += "<br><br>";
-            }
-            #endregion
-            #region 5.自定義json
-            if (showtype == 5)
-            {
-                html_text += "<br><br>";
-                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
-                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>自定義json</b></font></td></tr>";
-                html_text += "<tr><td>";
-                html_text += serializer.Serialize(wbl);
-                html_text += "</td></tr>";
-                html_text += "</table>";
-                html_text += "<br><br>";
-            }
-            #endregion
-            #region 6.wikia2巴哈模式
-            if (showtype == 6)
-            {
-                html_text += "<br><br>";
-                html_text += "<font color=\"#F03434\"><b>※使用說明：</b></font>此轉換功能產生之表格樣式為巴哈版友 路人∩(ゝω●)(<a href=\"https://home.gamer.com.tw/homeindex.php?owner=a37601416\" target=blank>a37601416</a>)所開發，如欲使用發文於巴哈姆特者，請先向 路人 詢問商借事宜再行使用※";
-                html_text += "<hr>";
-                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
-                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>巴哈語法</b></font></td></tr>";
-                html_text += "<tr><td colspan=\"1\" >";
-                html_text += "[table width=100% cellspacing=1 cellpadding=1 border=5 align=center]";
-                html_text += "<br>";
-                html_text += "[tr][td colspan=3 bgcolor=#333333 align=center][font=微軟正黑體][size=4][b][color=#ffffff]《"
-                    + floorName + "》[/color][/b][/size][/font][/td][/tr]";
-                html_text += "<br>";
-                html_text += "[tr bgcolor=#333333]";
-                html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]Battle[/color][/b][/size][/font][/td]";
-                html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人[/color][/b][/size][/font][/td]";
-                html_text += "[td align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人資訊[/color][/b][/size][/font][/td]";
-                html_text += "[/tr]";
-                foreach (WaveBasic wb in wbl)
-                {
-                    //html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
-                    foreach (WaveDetail wd in wb.WaveDetailList)
-                    {
-                        html_text += "<br>";
-                        html_text += "[tr]";
-                        if (wd.WaveDetailId == 1)
-                            html_text += "<br>[td rowspan=" + wb.WaveDetailList.Count + " width=8% bgcolor=#333333 align=center][font=微軟正黑體][size=3][b][color=#ffffff]"
-                                + wb.WaveId + (wd.MultiBloodFlag == "N" ? "<br>" + num2chinese(wb.WaveDetailList.Count) + "血" : "")
-                                + (wd.MultiBloodFlag == "C" ? "<br>前置" : "")
-                                + "[/color][/b][/size][/font][/td]";
-                        html_text += "<br>";
-                        html_text += "[td width=8%][img=https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.MonsterId + ".png][/td]";
-                        html_text += "<br>";
-
-                        html_text += "[td align=left]";
-                        //html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum.PadRight(10,' ').Replace(" ", "&nbsp")
-                        //    + "傷害 " + wd.AckNum.PadRight(6, ' ').Replace(" ", "&nbsp")
-                        //    + "CD " + (wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "")).PadRight(6, ' ').Replace(" ", "&nbsp") 
-                        //    + "防 " + wd.DefNum + "[/size][/font][/b]";
-                        html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum + "&nbsp&nbsp&nbsp"
-                            + "傷害 " + wd.AckNum + "&nbsp&nbsp&nbsp"
-                            + "CD " + wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "") + "&nbsp&nbsp&nbsp"
-                            + "防 " + wd.DefNum + "[/size][/font][/b]";
-                        html_text += "[hr]";
-                        html_text += "[div align=center][font=微軟正黑體][size=2][b]";
-                        html_text += readLocaleValue("BOSS_DESC_" + wd.EnemySkill, true).Replace("\n", "<br>");
-                        html_text += "[/b][/size][/font][/div]";
-                        html_text += "<br>";
-                        html_text += "[/td]";
-                        html_text += "<br>";
-                        html_text += "[/tr]";
-                    }
-                }
-                //html_text += wikia_text;
-                html_text += "[/table]";
-                html_text += "</td></tr>";
-                html_text += "</table>";
-                html_text += "<br>";
-            }
-            #endregion
-            #region 7.wikia2自定義json
-            if (showtype == 7)
-            {
-                html_text += "<br><br>";
-                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
-                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>自定義json</b></font></td></tr>";
-                html_text += "<tr><td>";
-                html_text += serializer.Serialize(wbl);
-                html_text += "</td></tr>";
-                html_text += "</table>";
-                html_text += "<br><br>";
-            }
-            #endregion
-            html_text += "<p>※熾天使關卡資訊產生器 Design by Alex Hou<br>Copyright © 2013-2015 Seraphim Raiders All rights reserved.</p>";
-
-            html_text += "</body>";
-            html_text += "</html>";
-
-            if ((showtype != 1) && (showtype != 2) && (showtype != 3) && (showtype != 5) && (showtype != 6) && (showtype != 7))
-                html_text = "";
-
-            return html_text;
-        }
-
-        protected string num2chinese(int num)
+        #endregion
+
+        /// <summary>
+        /// 維基相關轉換用的，一個簡單的數字對中文的轉換
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        private string num2chinese(int num)
         {
             string retStr = "";
             switch (num)
@@ -1465,8 +656,134 @@ namespace Tosapp_Tool
             return retStr;
         }
 
-        //處理整個關卡資訊表格
-        protected string generateHtmlStr(string floorName, string arg_title_color, string arg_title_word_color, string arg_floor_json, int showtype)
+        /// <summary>
+        /// 用來快速取得中文或英文的locale
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="isZh"></param>
+        /// <returns></returns>
+        private string readLocaleValue(string key, bool isZh)
+        {
+            try
+            {
+                if (isZh)
+                {
+                    return dict_locale_csv[key];
+                }
+                else
+                {
+                    return dict_locale_csv_eng[key];
+                }
+            }
+            catch (Exception e)
+            {
+                if (isZh)
+                    return "無此字串";
+                else
+                    return "Can't Find Value";
+            }
+        }
+
+        /// <summary>
+        /// 字串轉為byte
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        private static byte[] ReadFile(string filePath)
+        {
+            byte[] buffer;
+
+            FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            try
+            {
+                int length = (int)fileStream.Length;  // get file length
+                buffer = new byte[length];            // create buffer
+                int count;                            // actual number of bytes read
+                int sum = 0;                          // total number of bytes read
+
+                // read until Read method returns 0 (end of the stream has been reached)
+                while ((count = fileStream.Read(buffer, sum, length - sum)) > 0)
+                    sum += count;  // sum is a buffer offset for next reading
+            }
+            finally
+            {
+                fileStream.Close();
+                fileStream.Dispose();
+            }
+            return buffer;
+        }
+
+        /// <summary>
+        /// 文字檔如有分隔符號可轉為DataTable
+        /// </summary>
+        /// <param name="File"></param>
+        /// <param name="TableName"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
+        private DataTable TxtConvertToDataTable(string File, string TableName, string delimiter)
+        {
+            DataTable dt = new DataTable();
+            DataSet ds = new DataSet();
+            StreamReader s = new StreamReader(Server.MapPath(File), System.Text.Encoding.UTF8);
+            //string ss = s.ReadLine();//skip the first line
+            string[] columns = s.ReadLine().Split(delimiter.ToCharArray());
+            ds.Tables.Add(TableName);
+            foreach (string col in columns)
+            {
+                bool added = false;
+                string next = "";
+                int i = 0;
+                while (!added)
+                {
+                    string columnname = col + next;
+                    columnname = columnname.Replace("#", "");
+                    columnname = columnname.Replace("'", "");
+                    columnname = columnname.Replace("&", "");
+
+                    if (!ds.Tables[TableName].Columns.Contains(columnname))
+                    {
+                        ds.Tables[TableName].Columns.Add(columnname.ToUpper());
+                        added = true;
+                    }
+                    else
+                    {
+                        i++;
+                        next = "_" + i.ToString();
+                    }
+                }
+            }
+
+            string AllData = s.ReadToEnd();
+            string[] rows = AllData.Split("\n".ToCharArray());
+
+            foreach (string r in rows)
+            {
+                if (r.Trim() != "")
+                {
+                    string[] items = r.Split(delimiter.ToCharArray());
+                    ds.Tables[TableName].Rows.Add(items);
+                }
+            }
+
+            s.Close();
+            s.Dispose();
+
+            dt = ds.Tables[0];
+
+            return dt;
+        }
+
+        #region HTML碼產生 v1
+        /// <summary>
+        /// 產生HTML碼
+        /// </summary>
+        /// <param name="floorName"></param>
+        /// <param name="arg_title_color"></param>
+        /// <param name="arg_title_word_color"></param>
+        /// <param name="arg_floor_json"></param>
+        /// <param name="showtype"></param>
+        /// <returns></returns>
+        private string generateHtmlStr(string floorName, string arg_title_color, string arg_title_word_color, string arg_floor_json, int showtype)
         {
             string html_head = "";
             string html_text = "";
@@ -1645,7 +962,18 @@ namespace Tosapp_Tool
 
             return html_text;
         }
-        protected string showEnemyHtml(JObject jo_enemies, ref int times, ref string used_skill, ref string wikia_text, ref string tosapp_sql, string sql_prefix)
+
+        /// <summary>
+        /// 處理單一怪HTML資訊
+        /// </summary>
+        /// <param name="jo_enemies"></param>
+        /// <param name="times"></param>
+        /// <param name="used_skill"></param>
+        /// <param name="wikia_text"></param>
+        /// <param name="tosapp_sql"></param>
+        /// <param name="sql_prefix"></param>
+        /// <returns></returns>
+        private string showEnemyHtml(JObject jo_enemies, ref int times, ref string used_skill, ref string wikia_text, ref string tosapp_sql, string sql_prefix)
         {
             JObject jo_extras;
             JObject jo_lootItem;
@@ -1965,8 +1293,296 @@ namespace Tosapp_Tool
 
             return html_text;
         }
-        //處理單一enemy資訊
-        protected string getEnemyObj(JObject jo_enemies, ref int wavedetialid, ref int times, ref string multiblood_flag, ref List<WaveDetail> temp_wdl)
+        #endregion
+
+        #region HTML碼產生 v2(現任)
+        /// <summary>
+        /// 將MH的floor json解析為自定義json
+        /// </summary>
+        /// <param name="floor_json"></param>
+        /// <returns></returns>
+        private List<WaveBasic> getFloorData(string floor_json)
+        {
+            JObject jo_all, jo_data, jo_waves, jo_enemies;
+            JArray ja_waves, ja_enemies;
+            jo_all = JObject.Parse(floor_json);
+            jo_data = JObject.Parse(jo_all.GetValue("data").ToString());
+            ja_waves = JArray.Parse(jo_data.GetValue("waves").ToString());
+
+            //JObject jo_waves;
+            //JArray ja_enemies;
+            //JObject jo_enemies;
+
+            int wavedetialid = 0;
+            int checkNextEnemy = 0;
+            string multiblood_flag = "";
+            string enemyHtml = "";
+
+            //WaveBasic包含一個wave所有資訊；以List來串接所有wave
+            List<WaveBasic> wbl = new List<WaveBasic>();
+            WaveBasic temp_wb;
+
+            //最外層：wave的陣列，分離出每一wave
+            for (int i = 0; i < ja_waves.Count; i++)
+            {
+                //temp_wb為當前wave的物件，temp_wb.WaveDetailList為這個層所出現的每位敵人資訊集合
+                temp_wb = new WaveBasic();
+                temp_wb.WaveId = (i + 1).ToString();
+                List<WaveDetail> temp_wdl = new List<WaveDetail>();
+                wavedetialid = 0;
+
+                jo_waves = JObject.Parse(ja_waves[i].ToString());
+                ja_enemies = JArray.Parse(jo_waves.GetValue("enemies").ToString());
+
+                //記錄當層的虛影特性/場景特性
+                temp_wb.WaveSkill = jo_waves.GetValue("waveSkillId") != null ? jo_waves.GetValue("waveSkillId").ToString() : "0";
+
+                //skillList為空時，代表不為多階段魔王(爆衣魔王)，for 一般敵人(含多血怪處理方式)
+                if ((JObject.Parse(ja_enemies[0].ToString())).GetValue("skillList").ToString() == "[]")
+                {
+                    //內層：敵人的陣列，對於每一層wave內的所有敵人進行提取資訊
+                    for (int j = 0; j < ja_enemies.Count; j++)
+                    {
+                        jo_enemies = JObject.Parse(ja_enemies[j].ToString());
+
+                        //用來判斷是否有多血/變身怪
+                        checkNextEnemy = 0;
+                        multiblood_flag = "X";
+                        //getEnemyObj
+                        getEnemyObj(jo_enemies, ref wavedetialid, ref checkNextEnemy, ref multiblood_flag, ref temp_wdl);
+                    }
+                    temp_wb.WaveDetailList = temp_wdl;
+                    wbl.Add(temp_wb);
+                }
+                //多階段魔王(像是吉爾伽美什)
+                else
+                {
+                    int skillListCnt = JArray.Parse((JObject.Parse(ja_enemies[0].ToString())).GetValue("skillList").ToString()).Count();
+                    for (int s = 0; s < skillListCnt; s++)
+                    {
+                        temp_wb = new WaveBasic();
+                        temp_wb.WaveId = (i + 1).ToString() + "-" + (s + 1).ToString();
+                        temp_wb.WaveSkill = jo_waves.GetValue("waveSkillId") != null ? jo_waves.GetValue("waveSkillId").ToString() : "0";
+                        temp_wdl = new List<WaveDetail>();
+                        wavedetialid = 0;
+
+                        //for 本體+左右怪處理方式
+                        for (int j = 0; j < ja_enemies.Count; j++)
+                        {
+                            string new_char = "";
+                            //int no_show_cnt = 0;
+
+                            jo_enemies = JObject.Parse(ja_enemies[j].ToString());
+                            new_char = JArray.Parse(jo_enemies.GetValue("skillList").ToString())[skillListCnt - 1 - s].ToString();
+
+                            jo_enemies.Remove("characteristic");
+                            jo_enemies.Add("characteristic", new_char);
+
+                            checkNextEnemy = 0;
+                            multiblood_flag = "X";
+
+                            if (new_char != "0")
+                            {
+                                getEnemyObj(jo_enemies, ref wavedetialid, ref checkNextEnemy, ref multiblood_flag, ref temp_wdl);
+                            }
+                        }
+                        temp_wb.WaveDetailList = temp_wdl;
+                        wbl.Add(temp_wb);
+                    }
+                }
+            }
+            return wbl;
+        }
+
+        /// <summary>
+        /// 將維基代碼解析為自定義JSON
+        /// </summary>
+        /// <param name="wikia_code"></param>
+        /// <returns></returns>
+        private List<WaveBasic> getFloorDataByWikiaCode(string wikia_code)
+        {
+            string[] wikialine = wikia_code.Split('\n');
+            //WaveBasic包含一個wave所有資訊；以List來串接所有wave
+            List<WaveBasic> wbl = new List<WaveBasic>();
+            WaveBasic temp_wb = new WaveBasic();
+            List<WaveDetail> temp_wdl = new List<WaveDetail>();
+            WaveDetail temp_wd = new WaveDetail();
+
+            Match match;
+            string templine = "";
+            string stage = "";
+            temp_wb.WaveId = "";
+            int wavecount = 0;
+            string multiBlookFlag = "X";
+            foreach (string line in wikialine)
+            {
+                if (line.Contains("{{關卡數據|"))
+                {
+                    //前置作業，先把參數中的小模版替換成一般參數型態
+                    templine = line;
+                    templine = Regex.Replace(templine, @"\{\{[雙三]血\}\}", "|MultiB=N");
+                    templine = Regex.Replace(templine, @"\{\{前置\}\}", "|MultiB=C");
+                    templine = Regex.Replace(templine, @"\{\{初始CD\|(\d*)\}\}", delegate (Match tmpMatch)
+                    {
+                        string v = tmpMatch.Groups[1].Value;
+                        return "|IniCD=" + v;
+                    });
+                    //虛影特性數字
+                    templine = Regex.Replace(templine, @"\{\{特性\/突擊\|atk\=(\d*)\|(\d*)\%\}\}", delegate (Match tmpMatch)
+                    {
+                        string v = tmpMatch.Groups[1].Value;
+                        string p = tmpMatch.Groups[2].Value;
+                        return v + " (" + p + "%)";
+                    });
+                    templine = Regex.Replace(templine, @"\{\{特性\|atk\=(\d*)\}\}", delegate (Match tmpMatch)
+                    {
+                        string v = tmpMatch.Groups[1].Value;
+                        return v;
+                    });
+
+                    //1.設定層數
+                    match = Regex.Match(templine, @"stage\=([^\|\{\}]*)");
+                    if ((match.Success))
+                    {
+                        if ((match.Groups[1].Value != "") && (match.Groups[1].Value != stage))
+                        {
+                            //如果上一組WaveBasic是有成員的，就塞入wbl
+                            if (temp_wdl.Count > 0)
+                            {
+                                temp_wb.WaveDetailList = temp_wdl;
+                                wbl.Add(temp_wb);
+                            }
+
+                            temp_wb = new WaveBasic();
+                            temp_wb.WaveId = match.Groups[1].Value;
+                            temp_wdl = new List<WaveDetail>();
+                            wavecount = 0;
+                            multiBlookFlag = "X";
+                            stage = temp_wb.WaveId;
+                        }
+                    }
+                    //無層數就自成一層
+                    else
+                    {
+                        //如果上一組WaveBasic是有成員的，就塞入wbl
+                        if (temp_wdl.Count > 0)
+                        {
+                            temp_wb.WaveDetailList = temp_wdl;
+                            wbl.Add(temp_wb);
+                        }
+
+                        temp_wb = new WaveBasic();
+                        temp_wb.WaveId = "";
+                        temp_wdl = new List<WaveDetail>();
+                        wavecount = 0;
+                        multiBlookFlag = "X";
+                    }
+                    //2.虛影技能
+                    match = Regex.Match(templine, @"ws\=([^\|\{\}]*)");
+                    temp_wb.WaveSkill = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    temp_wd = new WaveDetail();
+                    wavecount++;
+                    temp_wd.WaveDetailId = wavecount;
+
+                    //實做
+
+                    //3.敵人
+                    match = Regex.Match(templine, @"\|(\d+)\|");
+                    //先轉數字再轉回字串(因為維基會 lpad 0 )
+                    temp_wd.MonsterId = ((match.Success) && (match.Groups[1].Value != "")) ? (Int32.Parse(match.Groups[1].Value)).ToString() : "0";
+
+                    //4.攻擊
+                    match = Regex.Match(templine, @"damage\=([^\|\{\}]*)");
+                    temp_wd.AckNum = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    //5.防禦
+                    match = Regex.Match(templine, @"def\=([^\|\{\}]*)");
+                    temp_wd.DefNum = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    //6.血量
+                    match = Regex.Match(templine, @"hp\=([^\|\{\}]*)");
+                    temp_wd.HpNum = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    //7.CD
+                    match = Regex.Match(templine, @"turn\=([^\|\{\}]*)");
+                    temp_wd.Duration = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    //8.初始CD
+                    match = Regex.Match(templine, @"IniCD\=([^\|\{\}]*)");
+                    temp_wd.IniDuration = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    //9.掉落金幣
+                    match = Regex.Match(templine, @"coin\=([^\|\{\}]*)");
+                    temp_wd.DropCoin = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    //10.掉落寶箱
+                    match = Regex.Match(templine, @"chest\=([^\|\{\}]*)");
+                    if ((match.Success) && (match.Groups[1].Value != ""))
+                    {
+                        temp_wd.DropType = "money";
+                        temp_wd.DropLevel = match.Groups[1].Value;
+                        temp_wd.DropId = "";
+                    }
+                    else
+                    {
+                        temp_wd.DropType = "無";
+                        temp_wd.DropLevel = "";
+                        temp_wd.DropId = "";
+                    }
+
+                    //11.掉落卡片&等級(目前只支援覆蓋掉掉落寶箱，無法同時顯示)
+                    match = Regex.Match(templine, @"lv\=([^\|\{\}]*)");
+                    if ((match.Success) && (match.Groups[1].Value != ""))
+                    {
+                        temp_wd.DropType = "monster";
+                        temp_wd.DropLevel = match.Groups[1].Value;
+                        match = Regex.Match(templine, @"drop\=([^\|\{\}]*)");
+                        temp_wd.DropId = match.Success ? (Int32.Parse(match.Groups[1].Value)).ToString() : temp_wd.MonsterId;
+                    }
+
+                    //12.敵人技能
+                    match = Regex.Match(templine, @"es\=([^\|\{\}]*)");
+                    temp_wd.EnemySkill = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
+
+                    //13.修羅場點數(未完成)
+                    temp_wd.PVEScore = "0";
+
+                    //14.敵人逃跑回合(未完成)
+                    temp_wd.EscapeRound = "0";
+
+                    //15.多血/前置判斷
+                    match = Regex.Match(templine, @"MultiB\=([^\|\{\}]*)");
+                    if ((match.Success) && (match.Groups[1].Value != ""))
+                        multiBlookFlag = match.Groups[1].Value;
+                    else
+                        multiBlookFlag = "X";
+                    temp_wd.MultiBloodFlag = multiBlookFlag;
+                    temp_wd.MultiBloodLevel = wavecount.ToString();
+
+                    temp_wdl.Add(temp_wd);
+                }
+            }
+            //最後一組WaveBasic，手動塞入wbl            
+            if (temp_wdl.Count > 0)
+            {
+                temp_wb.WaveDetailList = temp_wdl;
+                wbl.Add(temp_wb);
+            }
+
+            return wbl;
+        }
+
+        /// <summary>
+        /// 處理單一enemy資訊
+        /// </summary>
+        /// <param name="jo_enemies"></param>
+        /// <param name="wavedetialid"></param>
+        /// <param name="times"></param>
+        /// <param name="multiblood_flag"></param>
+        /// <param name="temp_wdl"></param>
+        /// <returns></returns>
+        private string getEnemyObj(JObject jo_enemies, ref int wavedetialid, ref int times, ref string multiblood_flag, ref List<WaveDetail> temp_wdl)
         {
             JObject jo_extras;
             JObject jo_lootItem;
@@ -2076,22 +1692,506 @@ namespace Tosapp_Tool
             return html_text;
         }
 
+        /// <summary>
+        /// 依據參數產生HTML碼，讓前端直接顯示(內端)
+        /// </summary>
+        /// <param name="floorName"></param>
+        /// <param name="arg_title_color"></param>
+        /// <param name="arg_title_word_color"></param>
+        /// <param name="arg_floor_json"></param>
+        /// <param name="showtype"></param>
+        /// <returns></returns>
+        protected string genHtml(string floorName, string arg_title_color, string arg_title_word_color, string arg_floor_json, int showtype)
+        {
+            string html_head = "";
+            string html_text = "";
+            string title_color = "39393A";
+            string title_word_color = "FFD973";
+            string floor_json = "";
+            floor_json = arg_floor_json;
+
+            List<WaveBasic> wbl;
+            if ((showtype == 6) || (showtype == 7))
+                wbl = getFloorDataByWikiaCode(floor_json); //測試
+            else
+                wbl = getFloorData(floor_json); //測試
+
+
+            //JObject jo_all = JObject.Parse(floor_json);
+            //JObject jo_data = JObject.Parse(jo_all.GetValue("data").ToString());
+            //JArray ja_waves = JArray.Parse(jo_data.GetValue("waves").ToString());
+
+            string used_skill_html = "";
+
+            if (arg_title_color != "")
+            {
+                title_color = arg_title_color;
+            }
+            if (arg_title_word_color != "")
+            {
+                title_word_color = arg_title_word_color;
+            }
+
+            html_head += "<html>";
+            html_head += "<title></title>";
+            html_head += "<head>";
+            html_head += "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
+            html_head += "</head>";
+            html_head += "<body>";
+            html_head += "<p>※熾天使關卡資訊產生器 Design by Alex Hou</p>";
+
+            html_text += html_head;
+
+            #region 1.Html模式
+            if (showtype == 1)
+            {
+                html_text += "<table cellpadding=\"1\" cellspacing=\"1\" frame=\"border\" border=\"5\" style=\"font-family:微軟正黑體;background-image:url('/Seraphim.png');\">";
+                html_text += "<tr bgcolor=\"#" + title_color + "\"><td colspan=\"9\" align=\"center\"><font color=\"#" + title_word_color + "\"><b>" + floorName + "</b></font></td></tr>";
+                html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">層數</td><td align=\"center\">敵人</td><td align=\"center\">攻擊</td><td align=\"center\">CD </td><td align=\"center\">HP</td><td align=\"center\">防禦</td><td align=\"center\">掉落</td><td align=\"center\">金幣</td><td align=\"center\" width=\"200\">備註</td></tr>";
+
+                foreach (WaveBasic wb in wbl)
+                {
+                    html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
+                    foreach (WaveDetail wd in wb.WaveDetailList)
+                    {
+                        //行頭
+                        html_text += "<tr>";
+
+                        //第一行必須給欄寬
+                        if (wd.WaveDetailId == 1)
+                            html_text += "<td align=\"center\" rowspan=\"" + wb.WaveDetailList.Count().ToString() + "\">" + wb.WaveId + "</td>";
+
+                        //卡片id及名稱
+                        html_text += "<td align=\"center\" >";
+                        html_text += "<img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.MonsterId + ".png\">";
+                        html_text += "<br>";
+                        html_text += "<font color=\"3366FF\"><b>" + wd.MonsterId + "</b></font> .";
+                        html_text += "<a href=\"http://www.tosapp.tw/tos/no." + wd.MonsterId + ".html\">" + readLocaleValue("MONSTER_" + wd.MonsterId, true) + "</a>";
+                        html_text += "</td>";
+                        //卡片id及名稱
+
+                        //攻擊力
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.AckNum;
+                        html_text += "</td>";
+                        //攻擊力
+
+                        //CD
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "");
+                        html_text += "</td>";
+                        //CD
+
+                        //血量
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.HpNum;
+                        html_text += "</td>";
+                        //血量
+
+                        //防禦力
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.DefNum;
+                        html_text += "</td>";
+                        //防禦力
+
+                        //掉落
+                        html_text += "<td align=\"center\" >";
+                        if (wd.DropType == "money")
+                        {
+                            html_text += "<img width=\"40\" height=\"40\" src=\"http://www.tosapp.tw/static/image/common/tos/icon-all-016.png\">";
+                            html_text += "<br>×" + wd.DropLevel; //掉落寶箱
+                        }
+                        else if (wd.DropType == "monster")
+                        {
+                            html_text += wd.DropId;
+                            html_text += "<br><img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.DropId + ".png\">";
+                            html_text += "<br>Lv " + wd.DropLevel; //掉落卡片
+                        }
+                        else
+                        {
+                            html_text += "無";
+                        }
+                        html_text += wd.PVEScore != "0" ? ("<br>寶藏券：" + wd.PVEScore) : "";
+                        html_text += "</td>";
+                        //掉落
+
+                        //金幣
+                        html_text += "<td align=\"center\">";
+                        html_text += wd.DropCoin;
+                        html_text += "</td>";
+                        //金幣
+
+                        //備註
+                        html_text += "<td align=\"center\">";
+                        html_text += wd.EscapeRound != "0" ? ("<font color=\"#E7A400\"><b>※敵人會在 " + wd.EscapeRound + " 回合後離開</b></font><br>") : "";
+
+                        if (wd.MultiBloodFlag != "X")
+                        {
+                            html_text += "<font color=\"#FFBBBB\"><b>【";
+                            if (wd.MultiBloodFlag == "N")
+                                html_text += "多血第 ";
+                            else if (wd.MultiBloodFlag == "C")
+                                html_text += "變身第 ";
+                            html_text += wd.MultiBloodLevel + " 血條】</b></font><br>";
+                        }
+
+                        if (wd.EnemySkill != "0")
+                        {
+                            html_text += "【" + "<font color=\"#3366FF\"><b>" + wd.EnemySkill + "</b></font>." + dict_boss_skill[Int32.Parse(wd.EnemySkill), 1] + dict_boss_skill[Int32.Parse(wd.EnemySkill), 0] + "】"; ; //技能名稱
+                            used_skill_html += "<tr><td>" + wd.EnemySkill + "</td><td>" + dict_boss_skill[Int32.Parse(wd.EnemySkill), 0] + "</td><td>";
+                            used_skill_html += readLocaleValue("BOSS_DESC_" + wd.EnemySkill, true).Replace("\n", "<br>") + "</td></tr>";
+                        }
+                        html_text += "</td>";
+                        //備註
+
+                        //行尾
+                        html_text += "</tr>";
+                    }
+                }
+
+                html_text += "</table>";
+                html_text += "<br><br>";
+
+                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
+                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"3\" align=\"center\"><font color=\"#FFD973\"><b>技能說明</b></font></td></tr>";
+                html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">編號</td><td align=\"center\">名字</td><td align=\"center\" width=\"300\">技能</td></tr>" + used_skill_html;
+                html_text += "</table>";
+                html_text += "<br>";
+            }
+            #endregion
+            #region 2.Wiki模式
+            if (showtype == 2)
+            {
+                html_text += "<br><br>";
+                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
+                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>維基語法</b></font></td></tr>";
+
+                foreach (WaveBasic wb in wbl)
+                {
+                    //html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
+                    foreach (WaveDetail wd in wb.WaveDetailList)
+                    {
+                        html_text += "<tr><td>{{關卡數據";
+
+                        html_text += "|" + wd.MonsterId.PadLeft(3, '0');
+                        html_text += "|stage=" + (wd.WaveDetailId == 1 ? (wb.WaveId + (wd.MultiBloodFlag == "N" ? "{{" + num2chinese(wb.WaveDetailList.Count) + "血}}" : "") + (wd.MultiBloodFlag == "C" ? "{{前置}}" : "")) : "");
+                        html_text += "|damage=" + wd.AckNum;
+                        html_text += "|turn=" + wd.Duration + (wd.IniDuration != "0" ? ("{{初始CD|" + wd.IniDuration + "}}") : "");
+                        html_text += "|hp=" + wd.HpNum;
+                        html_text += "|def=" + wd.DefNum;
+                        html_text += "|coin=" + wd.DropCoin;
+                        html_text += (wd.DropType == "monster" ? ("|drop=" + wd.DropId.PadLeft(3, '0') + "|lv=" + wd.DropLevel) : "");
+                        html_text += (wd.DropType == "money" ? ("|chest=" + wd.DropLevel) : "");
+                        html_text += (wd.EnemySkill != "0" ? ("|es=" + wd.EnemySkill) : "");
+                        if (wd.WaveDetailId == 1)
+                            html_text += (wb.WaveSkill != "0" ? ("|ws=" + wb.WaveSkill) : "");
+
+                        html_text += "}}</td></tr>";
+                    }
+                }
+
+                //html_text += wikia_text;
+                html_text += "</table>";
+                html_text += "<br>";
+            }
+            #endregion
+            #region 3.巴哈模式
+            if (showtype == 3)
+            {
+                html_text += "<br><br>";
+                html_text += "<font color=\"#F03434\"><b>※使用說明：</b></font>此轉換功能產生之表格樣式為巴哈版友 路人∩(ゝω●)(<a href=\"https://home.gamer.com.tw/homeindex.php?owner=a37601416\" target=blank>a37601416</a>)所開發，如欲使用發文於巴哈姆特者，請先向 路人 詢問商借事宜再行使用※";
+                html_text += "<hr>";
+                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
+                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>巴哈語法</b></font></td></tr>";
+                html_text += "<tr><td colspan=\"1\" >";
+                html_text += "[table width=100% cellspacing=1 cellpadding=1 border=5 align=center]";
+                html_text += "<br>";
+                html_text += "[tr][td colspan=3 bgcolor=#333333 align=center][font=微軟正黑體][size=4][b][color=#ffffff]《"
+                    + floorName + "》[/color][/b][/size][/font][/td][/tr]";
+                html_text += "<br>";
+                html_text += "[tr bgcolor=#333333]";
+                html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]Battle[/color][/b][/size][/font][/td]";
+                html_text += "[td width=6% align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人[/color][/b][/size][/font][/td]";
+                html_text += "[td align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人資訊[/color][/b][/size][/font][/td]";
+                html_text += "[/tr]";
+                foreach (WaveBasic wb in wbl)
+                {
+                    //html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
+                    foreach (WaveDetail wd in wb.WaveDetailList)
+                    {
+                        html_text += "<br>";
+                        html_text += "[tr]";
+                        if (wd.WaveDetailId == 1)
+                            html_text += "<br>[td rowspan=" + wb.WaveDetailList.Count + " width=8% bgcolor=#333333 align=center][font=微軟正黑體][size=3][b][color=#ffffff]"
+                                + wb.WaveId + (wd.MultiBloodFlag == "N" ? "<br>" + num2chinese(wb.WaveDetailList.Count) + "血" : "")
+                                + (wd.MultiBloodFlag == "C" ? "<br>前置" : "")
+                                + "[/color][/b][/size][/font][/td]";
+                        html_text += "<br>";
+                        html_text += "[td width=8%][img=https://www.tosapp.tw/cardpic/" + wd.MonsterId + ".png][/td]";
+                        html_text += "<br>";
+
+                        html_text += "[td align=left]";
+                        //html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum.PadRight(10,' ').Replace(" ", "&nbsp")
+                        //    + "傷害 " + wd.AckNum.PadRight(6, ' ').Replace(" ", "&nbsp")
+                        //    + "CD " + (wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "")).PadRight(6, ' ').Replace(" ", "&nbsp") 
+                        //    + "防 " + wd.DefNum + "[/size][/font][/b]";
+                        html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum + "&nbsp&nbsp&nbsp"
+                            + "傷害 " + wd.AckNum + "&nbsp&nbsp&nbsp"
+                            + "CD " + wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "") + "&nbsp&nbsp&nbsp"
+                            + "防 " + wd.DefNum + "[/size][/font][/b]";
+                        html_text += "[hr]";
+                        html_text += "[div align=center][font=微軟正黑體][size=2][b]";
+                        html_text += readLocaleValue("BOSS_DESC_" + wd.EnemySkill, true).Replace("\n", "<br>");
+                        html_text += "[/b][/size][/font][/div]";
+                        html_text += "<br>";
+                        html_text += "[/td]";
+                        html_text += "<br>";
+                        html_text += "[/tr]";
+                    }
+                }
+                //html_text += wikia_text;
+                html_text += "[/table]";
+                html_text += "</td></tr>";
+                html_text += "</table>";
+                html_text += "<br>";
+            }
+            #endregion
+            #region 4.表格數值模式
+            if (showtype == 4)
+            {
+                html_text += "<table cellpadding=\"1\" cellspacing=\"1\" frame=\"border\" border=\"5\" style=\"font-family:微軟正黑體;background-image:url('/Seraphim.png');\">";
+                html_text += "<tr bgcolor=\"#" + title_color + "\"><td colspan=\"9\" align=\"center\"><font color=\"#" + title_word_color + "\"><b>" + floorName + "</b></font></td></tr>";
+                html_text += "<tr bgcolor=\"#EEEEEE\"><td align=\"center\">層數</td><td align=\"center\">敵人</td><td align=\"center\">攻擊</td><td align=\"center\">CD </td><td align=\"center\">HP</td><td align=\"center\">防禦</td><td align=\"center\">掉落</td><td align=\"center\">金幣</td><td align=\"center\" width=\"200\">備註</td></tr>";
+
+                foreach (WaveBasic wb in wbl)
+                {
+                    html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
+                    foreach (WaveDetail wd in wb.WaveDetailList)
+                    {
+                        //行頭
+                        html_text += "<tr>";
+
+                        //第一行必須給欄寬
+                        if (wd.WaveDetailId == 1)
+                            html_text += "<td align=\"center\" rowspan=\"" + wb.WaveDetailList.Count().ToString() + "\">" + wb.WaveId + "</td>";
+
+                        //卡片id及名稱
+                        html_text += "<td align=\"center\" >";
+                        html_text += "<img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.MonsterId + ".png\">";
+                        html_text += "<br>";
+                        html_text += "<font color=\"3366FF\"><b>" + wd.MonsterId + "</b></font> .";
+                        html_text += "<a href=\"http://www.tosapp.tw/tos/no." + wd.MonsterId + ".html\">" + readLocaleValue("MONSTER_" + wd.MonsterId, true) + "</a>";
+                        html_text += "</td>";
+                        //卡片id及名稱
+
+                        //攻擊力
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.AckNum;
+                        html_text += "</td>";
+                        //攻擊力
+
+                        //CD
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "");
+                        html_text += "</td>";
+                        //CD
+
+                        //血量
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.HpNum;
+                        html_text += "</td>";
+                        //血量
+
+                        //防禦力
+                        html_text += "<td align=\"center\" >";
+                        html_text += wd.DefNum;
+                        html_text += "</td>";
+                        //防禦力
+
+                        //掉落
+                        html_text += "<td align=\"center\" >";
+                        if (wd.DropType == "money")
+                        {
+                            html_text += "<img width=\"40\" height=\"40\" src=\"http://www.tosapp.tw/static/image/common/tos/icon-all-016.png\">";
+                            html_text += "<br>×" + wd.DropLevel; //掉落寶箱
+                        }
+                        else if (wd.DropType == "monster")
+                        {
+                            html_text += wd.DropId;
+                            html_text += "<br><img width=\"40\" height=\"40\" src=\"https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.DropId + ".png\">";
+                            html_text += "<br>Lv " + wd.DropLevel; //掉落卡片
+                        }
+                        else
+                        {
+                            html_text += "無";
+                        }
+                        html_text += wd.PVEScore != "0" ? ("<br>寶藏券：" + wd.PVEScore) : "";
+                        html_text += "</td>";
+                        //掉落
+
+                        //金幣
+                        html_text += "<td align=\"center\">";
+                        html_text += wd.DropCoin;
+                        html_text += "</td>";
+                        //金幣
+
+                        //備註
+                        html_text += "<td align=\"center\">";
+                        html_text += wd.EscapeRound != "0" ? ("<font color=\"#E7A400\"><b>※敵人會在 " + wd.EscapeRound + " 回合後離開</b></font><br>") : "";
+
+                        if (wd.MultiBloodFlag != "X")
+                        {
+                            html_text += "<font color=\"#FFBBBB\"><b>【";
+                            if (wd.MultiBloodFlag == "N")
+                                html_text += "多血第 ";
+                            else if (wd.MultiBloodFlag == "C")
+                                html_text += "變身第 ";
+                            html_text += wd.MultiBloodLevel + " 血條】</b></font><br>";
+                        }
+
+                        if (wd.EnemySkill != "0")
+                        {
+                            html_text += "【" + "<font color=\"#3366FF\"><b>" + wd.EnemySkill + "</b></font>." + dict_boss_skill[Int32.Parse(wd.EnemySkill), 1] + dict_boss_skill[Int32.Parse(wd.EnemySkill), 0] + "】"; ; //技能名稱
+                        }
+                        html_text += "</td>";
+                        //備註
+
+                        //行尾
+                        html_text += "</tr>";
+                    }
+                }
+
+                html_text += "</table>";
+                html_text += "<br><br>";
+            }
+            #endregion
+            #region 5.自定義json
+            if (showtype == 5)
+            {
+                html_text += "<br><br>";
+                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
+                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>自定義json</b></font></td></tr>";
+                html_text += "<tr><td>";
+                html_text += JsonConvert.SerializeObject(wbl, Formatting.Indented);
+                html_text += "</td></tr>";
+                html_text += "</table>";
+                html_text += "<br><br>";
+            }
+            #endregion
+            #region 6.wikia2巴哈模式
+            if (showtype == 6)
+            {
+                html_text += "<br><br>";
+                html_text += "<font color=\"#F03434\"><b>※使用說明：</b></font>此轉換功能產生之表格樣式為巴哈版友 路人∩(ゝω●)(<a href=\"https://home.gamer.com.tw/homeindex.php?owner=a37601416\" target=blank>a37601416</a>)所開發，如欲使用發文於巴哈姆特者，請先向 路人 詢問商借事宜再行使用※";
+                html_text += "<hr>";
+                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
+                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>巴哈語法</b></font></td></tr>";
+                html_text += "<tr><td colspan=\"1\" >";
+                html_text += "[table width=100% cellspacing=1 cellpadding=1 border=5 align=center]";
+                html_text += "<br>";
+                html_text += "[tr][td colspan=3 bgcolor=#333333 align=center][font=微軟正黑體][size=4][b][color=#ffffff]《"
+                    + floorName + "》[/color][/b][/size][/font][/td][/tr]";
+                html_text += "<br>";
+                html_text += "[tr bgcolor=#333333]";
+                html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]Battle[/color][/b][/size][/font][/td]";
+                html_text += "[td width=8% align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人[/color][/b][/size][/font][/td]";
+                html_text += "[td align=center][font=微軟正黑體][size=3][b][color=#ffffff]敵人資訊[/color][/b][/size][/font][/td]";
+                html_text += "[/tr]";
+                foreach (WaveBasic wb in wbl)
+                {
+                    //html_text += wb.WaveSkill != "0" ? ("<tr><td align=\"center\" rowspan=\"1\" colspan=\"9\"><font color=\"#787678\"><b>【R" + wb.WaveId + "虛影特性<font color=\"#3366FF\"><b>" + wb.WaveSkill + "</b></font>】</b></font><br/>" + readLocaleValue("WAVESKILL_DESC_" + wb.WaveSkill, true).Replace("\n", "<br>") + "</td></tr>") : "";
+                    foreach (WaveDetail wd in wb.WaveDetailList)
+                    {
+                        html_text += "<br>";
+                        html_text += "[tr]";
+                        if (wd.WaveDetailId == 1)
+                            html_text += "<br>[td rowspan=" + wb.WaveDetailList.Count + " width=8% bgcolor=#333333 align=center][font=微軟正黑體][size=3][b][color=#ffffff]"
+                                + wb.WaveId + (wd.MultiBloodFlag == "N" ? "<br>" + num2chinese(wb.WaveDetailList.Count) + "血" : "")
+                                + (wd.MultiBloodFlag == "C" ? "<br>前置" : "")
+                                + "[/color][/b][/size][/font][/td]";
+                        html_text += "<br>";
+                        html_text += "[td width=8%][img=https://asdfghjklu2000.github.io/Tosapp_Tool/px100/" + wd.MonsterId + ".png][/td]";
+                        html_text += "<br>";
+
+                        html_text += "[td align=left]";
+                        //html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum.PadRight(10,' ').Replace(" ", "&nbsp")
+                        //    + "傷害 " + wd.AckNum.PadRight(6, ' ').Replace(" ", "&nbsp")
+                        //    + "CD " + (wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "")).PadRight(6, ' ').Replace(" ", "&nbsp") 
+                        //    + "防 " + wd.DefNum + "[/size][/font][/b]";
+                        html_text += "[b][font=微軟正黑體][size=3]HP " + wd.HpNum + "&nbsp&nbsp&nbsp"
+                            + "傷害 " + wd.AckNum + "&nbsp&nbsp&nbsp"
+                            + "CD " + wd.Duration + ((wd.IniDuration != "0") ? "(" + wd.IniDuration + ")" : "") + "&nbsp&nbsp&nbsp"
+                            + "防 " + wd.DefNum + "[/size][/font][/b]";
+                        html_text += "[hr]";
+                        html_text += "[div align=center][font=微軟正黑體][size=2][b]";
+                        html_text += readLocaleValue("BOSS_DESC_" + wd.EnemySkill, true).Replace("\n", "<br>");
+                        html_text += "[/b][/size][/font][/div]";
+                        html_text += "<br>";
+                        html_text += "[/td]";
+                        html_text += "<br>";
+                        html_text += "[/tr]";
+                    }
+                }
+                //html_text += wikia_text;
+                html_text += "[/table]";
+                html_text += "</td></tr>";
+                html_text += "</table>";
+                html_text += "<br>";
+            }
+            #endregion
+            #region 7.wikia2自定義json
+            if (showtype == 7)
+            {
+                html_text += "<br><br>";
+                html_text += "<table cellpadding=\"3\" cellspacing=\"3\" frame=\"border\" border=\"3\" style=\"font-family:微軟正黑體;\">";
+                html_text += "<tr bgcolor=\"#39393A\"><td colspan=\"1\" align=\"center\"><font color=\"#FFD973\"><b>自定義json</b></font></td></tr>";
+                html_text += "<tr><td>";
+                html_text += JsonConvert.SerializeObject(wbl, Formatting.Indented);
+                html_text += "</td></tr>";
+                html_text += "</table>";
+                html_text += "<br><br>";
+            }
+            #endregion
+            html_text += "<p>※熾天使關卡資訊產生器 Design by Alex Hou<br>Copyright © 2013-2015 Seraphim Raiders All rights reserved.</p>";
+
+            html_text += "</body>";
+            html_text += "</html>";
+
+            if ((showtype != 1) && (showtype != 2) && (showtype != 3) && (showtype != 5) && (showtype != 6) && (showtype != 7))
+                html_text = "";
+
+            return html_text;
+        }
+
+        /// <summary>
+        /// 依據參數產生HTML碼，讓前端直接顯示(對外端)
+        /// </summary>
+        /// <param name="floorName"></param>
+        /// <param name="arg_title_color"></param>
+        /// <param name="arg_title_word_color"></param>
+        /// <param name="arg_floor_json"></param>
+        /// <param name="arg_showtype"></param>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetHtml(string floorName, string arg_title_color, string arg_title_word_color, string arg_floor_json, int arg_showtype)
         {
-            loadLocaleCsv2();
-            loadBossSkill2();
-            loadMonsterData2();
+            localLocaleCsv(); //載入locale
+            loadBossSkill(); //載入敵技
+            loadMonsterData(); //載入召喚獸資料
+
             string htmlstr = "";
-            //htmlstr = generateHtmlStr(floorName, arg_title_color, arg_title_word_color, arg_floor_json, arg_showtype);
+            string ip = HttpContext.Current.Request.UserHostAddress;
             htmlstr = genHtml(floorName, arg_title_color, arg_title_word_color, arg_floor_json, arg_showtype);
-            //Context.Response.Output.Write(htmlstr);
-            //HttpContext.Current.Response.Write(htmlstr);            
-            //Context.Response.Output.Write("{\"reponse\":\"ok\"}");
+            StoreFloorJson(ip, arg_floor_json);
             return htmlstr;
         }
+        #endregion
 
+        /// <summary>
+        /// 熾天使後台呼叫使用，會回傳我自定義的json格式
+        /// </summary>
+        /// <param name="arg_floor_json"></param>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public void GetTosappJson(string arg_floor_json)
@@ -2102,12 +2202,12 @@ namespace Tosapp_Tool
             if (floor_json.Contains("\"respond\""))
             {
                 wbl = getFloorData(floor_json); //測試
-                JsonStr = serializer.Serialize(wbl);
+                JsonStr = JsonConvert.SerializeObject(wbl, Formatting.Indented);
             }
             else if (floor_json.Contains("{{關卡數據"))
             {
                 wbl = getFloorDataByWikiaCode(floor_json); //測試
-                JsonStr = serializer.Serialize(wbl);
+                JsonStr = JsonConvert.SerializeObject(wbl, Formatting.Indented);
             }
             else if (floor_json.Contains("\"WaveId\""))
             {
@@ -2116,8 +2216,337 @@ namespace Tosapp_Tool
             Context.Response.Output.Write(JsonStr);
         }
 
+        /// <summary>
+        /// 儲存上傳過的floor json檔
+        /// </summary>
+        /// <param name="file_index"></param>
+        /// <param name="arg_floor_json"></param>
+        protected void StoreFloorJson(string file_index, string arg_floor_json)
+        {
+            //JObject jo_gamedata = JObject.Parse(arg_gamedata_json);
+            string timeStamp = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds).ToString();
+            StreamWriter floor = new StreamWriter(Server.MapPath("~/json/") + "/Floor_" + file_index + "_" + timeStamp + ".txt");
+            floor.Write(arg_floor_json);
+            floor.Close();
+            floor.Dispose();
+        }
+
+        /// <summary>
+        /// Monster data轉txtDataTable格式並儲存
+        /// </summary>
+        /// <param name="arg_gamedata_json"></param>
+        /// <returns></returns>
         [WebMethod]
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string StoreGameData(string arg_gamedata_json)
+        {
+            JObject jo_gamedata = JObject.Parse(arg_gamedata_json);
+            string timeStamp = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds).ToString();
+
+            StreamWriter monster = new StreamWriter(Server.MapPath("~/json/") + "/Monster_" + timeStamp + ".txt");
+
+            string tbl_title;
+
+            tbl_title = "";
+            if (jo_gamedata["data"]["monsters"] != null)
+            {
+                if (jo_gamedata["data"]["monsters"].Count() > 0)
+                {
+                    int tbl_col_cnt = (jo_gamedata["data"]["monsters"][0].ToString().Split('|')).Count();
+                    for (int i = 0; i < tbl_col_cnt; i++)
+                        tbl_title += "col_" + (i + 1).ToString() + "|";
+                    tbl_title = tbl_title.Substring(0, tbl_title.Length - 1);
+
+                    monster.Write(tbl_title);
+                    foreach (string ln in jo_gamedata["data"]["monsters"])
+                        monster.Write("\r\n" + ln.Replace("\r\n", "char(10)"));
+                }
+            }
+            monster.Close();
+            monster.Dispose();
+
+            if (File.Exists(Server.MapPath("~/") + "/Monster.txt"))
+                File.Delete(Server.MapPath("~/") + "/Monster.txt");
+            File.Copy(Server.MapPath("~/json/") + "/Monster_" + timeStamp + ".txt", Server.MapPath("~/") + "/Monster.txt");
+
+            return "success";
+        }
+
+        /// <summary>
+        /// 使用召喚獸編號取得屬性框編號；1-1為一般水屬框；2-3為異轉木屬框；3-5為究煉暗屬框，以此類推
+        /// </summary>
+        /// <param name="MonsterID"></param>
+        /// <returns></returns>
+        [WebMethod]
+        public string GetAttribute(string MonsterID)
+        {
+            string attr = "", attr_type = "", realMonsterID = "";
+
+            MonsterID = MonsterID.Trim();
+            realMonsterID = MonsterID;
+            DataTable dt_monsters, dt_monsterSkins;
+            dt_monsters = TxtConvertToDataTable("~/Monster.txt", "Monster", "|");
+            dt_monsterSkins = TxtConvertToDataTable("~/monsterSkins.txt", "monsterSkins", "|");
+            if ((MonsterID.Substring(0, 1) == "6") && (MonsterID.Length == 4))
+            {
+                var query_skin = from c in dt_monsterSkins.AsEnumerable()
+                                 where c.Field<string>("col_1") == MonsterID.Substring(1, 3)
+                                 select c;
+                foreach (DataRow dr in query_skin)
+                {
+                    realMonsterID = dr[1].ToString();
+                }
+            }
+            var query_mons = from c in dt_monsters.AsEnumerable()
+                             where c.Field<string>("col_1") == realMonsterID
+                             select c;
+            foreach (DataRow dr in query_mons)
+            {
+                attr = dr[4].ToString();
+                attr_type = dr[67].ToString();
+            }
+            return attr_type + "_" + attr;
+        }
+
+        [WebMethod]
+        public string GetTosMonsterInfo(string MonsterID)
+        {
+            localLocaleCsv();
+            SimpleLocale.dict = dict_locale_csv;
+            MySoulSkillProperty ssp;
+
+            DataTable dt_monsters = TxtConvertToDataTable("~/Monster.txt", "Monster", "|");
+            DataTable dt_monsterSkins = TxtConvertToDataTable("~/monsterSkins.txt", "MonsterSkin", "|");
+            string realMonsterID = "";
+            if ((MonsterID.Substring(0, 1) == "6") && (MonsterID.Length == 4))
+            {
+                var query_skin = from c in dt_monsterSkins.AsEnumerable()
+                                 where c.Field<string>("col_1") == MonsterID.Substring(1, 3)
+                                 select c;
+                foreach (DataRow dr in query_skin)
+                {
+                    realMonsterID = dr[1].ToString();
+                }
+            }
+
+            DataTable dt_refine = TxtConvertToDataTable("~/Refine.txt", "Refine", "|");
+            SimpleLocale.dict = dict_locale_csv;
+
+            DataRow[] dra = dt_refine.Select("col1 = '1042'", "col2 asc"); ;
+            string ret = "";
+            foreach (DataRow dr in dra)
+            {
+                string id = dr[0].ToString();//id
+                string level = dr[1].ToString();//level
+                string exp = dr[2].ToString();//exp
+                int type = Int32.Parse(dr[3].ToString());//type
+                string values = dr[4].ToString();//values
+                int isAwakenSkill = Int32.Parse(dr[5].ToString());//isAwakenSkill
+                float awakenBonus = float.Parse(dr[6].ToString());//awakenBonus
+                int floorId = Int32.Parse(dr[7].ToString());//floorId
+                //int index = SoulSkillPropertyController.GetInstance().AddSoulSkillProperty(type, values, isAwakenSkill, awakenBonus, floorId);
+                string[] array = values.Split(new char[] { ',' });
+                int arg = MParser.ArrayItemParseToInt(ref array, 0, 0);
+                int arg2 = MParser.ArrayItemParseToInt(ref array, 1, 0);
+                int arg3 = MParser.ArrayItemParseToInt(ref array, 2, 0);
+                int arg4 = MParser.ArrayItemParseToInt(ref array, 3, 0);
+                ssp = new MySoulSkillProperty(1, type, arg, arg2, arg3, arg4, isAwakenSkill, awakenBonus, floorId);
+                ret += ssp.Description() + "QQQQQ";
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// 測試用
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [WebMethod]
+        public string Test(string file)
+        {
+            localLocaleCsv();
+            SimpleLocale.dict = dict_locale_csv;
+            MySoulSkillProperty ssp;
+            
+            DataTable dt_refine = TxtConvertToDataTable("~/Refine.txt", "Refine", "|");
+            SimpleLocale.dict = dict_locale_csv;
+
+            DataRow[] dra = dt_refine.Select("col1 = '1042'", "col2 asc"); ;
+            string ret = "";
+            foreach(DataRow dr in dra)
+            {
+                string id = dr[0].ToString();//id
+                string level = dr[1].ToString();//level
+                string exp = dr[2].ToString();//exp
+                int type = Int32.Parse(dr[3].ToString());//type
+                string values = dr[4].ToString();//values
+                int isAwakenSkill = Int32.Parse(dr[5].ToString());//isAwakenSkill
+                float awakenBonus = float.Parse(dr[6].ToString());//awakenBonus
+                int floorId = Int32.Parse(dr[7].ToString());//floorId
+                //int index = SoulSkillPropertyController.GetInstance().AddSoulSkillProperty(type, values, isAwakenSkill, awakenBonus, floorId);
+                string[] array = values.Split(new char[]{','});
+                int arg = MParser.ArrayItemParseToInt(ref array, 0, 0);
+                int arg2 = MParser.ArrayItemParseToInt(ref array, 1, 0);
+                int arg3 = MParser.ArrayItemParseToInt(ref array, 2, 0);
+                int arg4 = MParser.ArrayItemParseToInt(ref array, 3, 0);
+                ssp = new MySoulSkillProperty(1, type, arg, arg2, arg3, arg4, isAwakenSkill, awakenBonus, floorId);
+                ret += ssp.Description() + "QQQQQ";
+            }
+            return ret;
+            
+            //string SQLStr = "";
+            //SqlCommand DBID_SQLCommand;
+            //SqlConnection HISConn = new SqlConnection(connectionstr);
+            //HISConn.Open();
+            //SQLStr = "use TOS;DELETE FROM [REFINESKILL_DEF]";
+            //DBID_SQLCommand = new SqlCommand(SQLStr, HISConn);
+            //DBID_SQLCommand.ExecuteNonQuery();
+
+            ////怕用foreach會不照順序寫入，比較麻煩，改用for迴圈
+            ///*foreach (var OneItem in dictionary)
+            //{
+            //    SQLStr = "use TOS;insert into [LOCALE_NEW] values ('" + OneItem.Key + "','" + OneItem.Value.Replace("'","''") + "');";
+            //    //建立SQL命令對象
+            //    DBID_SQLCommand.CommandText = SQLStr;
+            //    DBID_SQLCommand.ExecuteNonQuery();
+            //    //Console.WriteLine("Key = " + OneItem.Key + ", Value = " + OneItem.Value);
+            //}*/
+
+            ////開始把陣列塞到LOCALE_NEW裡面去
+            //SQLStr = "use TOS;\n";
+            //for (int i = 0; i < dt_refine.Rows.Count; i++)
+            //{
+            //    string id = dr[0].ToString();//id
+            //    string level = dr[1].ToString();//level
+            //    string exp = dr[2].ToString();//exp
+            //    SoulSkillType type = (SoulSkillType)Int32.Parse(dr[3].ToString());//type
+            //    string values = dr[4].ToString();//values
+            //    int isAwakenSkill = Int32.Parse(dr[5].ToString());//isAwakenSkill
+            //    float awakenBonus = float.Parse(dr[6].ToString());//awakenBonus
+            //    int floorId = Int32.Parse(dr[7].ToString());//floorId
+            //    //int index = SoulSkillPropertyController.GetInstance().AddSoulSkillProperty(type, values, isAwakenSkill, awakenBonus, floorId);
+            //    string[] array = values.Split(new char[]
+            //    {
+            //        ','
+            //    });
+            //    int arg = MParser.ArrayItemParseToInt(ref array, 0, 0);
+            //    int arg2 = MParser.ArrayItemParseToInt(ref array, 1, 0);
+            //    int arg3 = MParser.ArrayItemParseToInt(ref array, 2, 0);
+            //    int arg4 = MParser.ArrayItemParseToInt(ref array, 3, 0);
+            //    property = new SoulSkillProperty(1, type, arg, arg2, arg3, arg4, isAwakenSkill, awakenBonus, floorId);
+            //    //txt_floor_json.Text += property.Description() + "\n";
+
+            //    //SQLStr = "use TOS;insert into [REFINESKILL_DEF] values (N'" + id + "',N'" + level + "',N'" + exp + "','','',N'" + property.Description().Replace("\n","<br>") + "','','');";                
+            //    SQLStr += "insert into [REFINESKILL_DEF] values (N'" + id + "',N'" + level + "',N'" + exp + "','','',N'" + property.Description() + "','','');\n";
+            //}
+            //DBID_SQLCommand.CommandText = SQLStr;
+            //DBID_SQLCommand.ExecuteNonQuery();
+
+        }
+
+        #region 輸出TXT檔(此區沒用到，因為會害網站爆流量)
+        /// <summary>
+        /// 將傳入的base64解析為MCSV後寫入產生的tmp檔回傳路徑
+        /// </summary>
+        /// <param name="filebase64"></param>
+        /// <returns></returns>
+        //[WebMethod]
+        //[ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string GetLocaleTxt(string filebase64)
+        {
+            string tmpFilePName = Path.GetTempFileName();
+            string path = tmpFilePName;
+            FileStream fs2 = new FileStream(path, System.IO.FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+            StreamWriter sw = new StreamWriter(fs2);
+
+            byte[] newBytes = Convert.FromBase64String(filebase64);
+            MCSVFile m = new MCSVFile();
+            m.LoadBinaryAsset(newBytes);
+            //Tosapp_Tool.MCSVFile m = MCSVFile.LoadStream(file);
+            Dictionary<string, string> TipsManager = new Dictionary<string, string>();
+
+            //m.NumRow()為所有字串的總數
+            int num = m.NumRow();
+            //return num.ToString();
+            //宣告一個陣列用來接MCSVFile破解出來的字串
+            string[,] dict = new string[num, 3];
+
+            //用來接
+            string text = string.Empty;
+            string text1 = string.Empty;
+            string text2 = string.Empty;
+
+            int num2 = 0;
+            for (int i = 0; i < num - 1; i++)
+            {
+                text = string.Empty;
+                text1 = string.Empty;
+                text2 = string.Empty;
+                if (!string.IsNullOrEmpty(m.GetString(i, 0, string.Empty)))
+                {
+                    //m.GetString(i, 0, string.Empty)是字串的KEY值
+                    text = m.GetString(i, 0, string.Empty);
+                    //m.GetString(i, 0, string.Empty)是字串的英文描述
+                    text1 = m.GetString(i, 1, string.Empty);
+                    //m.GetString(i, 0, string.Empty)是字串的中文描述
+                    text2 = m.GetString(i, 2, string.Empty);
+                    try
+                    {
+                        //寫到陣列去
+                        dict[i, 0] = text;
+                        dict[i, 1] = text1;
+                        dict[i, 2] = text2;
+
+                        //輸出html字串
+                        sw.WriteLine("<<<<" + text + ">>>>");
+                        sw.WriteLine(text2);
+                        sw.WriteLine(text1);
+
+                        //dict_locale_csv.Add(text, text2);
+                        //dict_locale_csv_eng.Add(text, text1);
+                    }
+                    catch (Exception e)
+                    {
+                        //Watchdog.LogError("[SimpleLocale] (Duplicated Translation Label) Key: " + text + " Msg: " + text2);
+                    }
+                    string[] array = text.Split(new char[] { '_' });
+                    if (array.Length == 2 && text.StartsWith("TIP_") && int.TryParse(array[1], out num2))
+                    {
+                        TipsManager.Add(text, text2);
+                    }
+                }
+            }
+            sw.Close();
+            fs2.Close();
+
+            return path;
+
+            //flushxlsxfile();
+            //ret = JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented);
+
+
+
+            // This text is added only once to the file.
+
+            // Create a file to write to.
+            //string createText = "Hello and Welcome" + Environment.NewLine;
+            //File.WriteAllText(path, createText, Encoding.UTF8);
+            //File.WriteAllText(path, "1234456dfghdfgsdf\n245asdsdf", Encoding.UTF8);
+
+            //return fileName;
+        }
+        #endregion
+
+        #region 輸出EXCEL檔(此區沒用到，因為會害網站爆流量)
+        private string fileName = null; //文檔名
+        private IWorkbook workbook = null;
+
+        /// <summary>
+        /// 將傳入的base64解析為MCSV後寫入產生的tmp excel檔回傳路徑
+        /// </summary>
+        /// <param name="filebase64"></param>
+        /// <returns></returns>
+        //[WebMethod]
+        //[ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetLocale(string filebase64)
         {
             byte[] newBytes = Convert.FromBase64String(filebase64);
@@ -2190,130 +2619,6 @@ namespace Tosapp_Tool
             return fileName;
         }
 
-        [WebMethod]
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string GetLocaleTxt(string filebase64)
-        {
-            string tmpFilePName = Path.GetTempFileName();
-            string path = tmpFilePName;
-            FileStream fs2 = new FileStream(path, System.IO.FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-            StreamWriter sw = new StreamWriter(fs2);
-
-            byte[] newBytes = Convert.FromBase64String(filebase64);
-            MCSVFile m = new MCSVFile();
-            m.LoadBinaryAsset(newBytes);
-            //Tosapp_Tool.MCSVFile m = MCSVFile.LoadStream(file);
-            Dictionary<string, string> TipsManager = new Dictionary<string, string>();
-
-            //m.NumRow()為所有字串的總數
-            int num = m.NumRow();
-            //return num.ToString();
-            //宣告一個陣列用來接MCSVFile破解出來的字串
-            string[,] dict = new string[num, 3];
-
-            //用來接
-            string text = string.Empty;
-            string text1 = string.Empty;
-            string text2 = string.Empty;
-
-            int num2 = 0;
-            for (int i = 0; i < num - 1; i++)
-            {
-                text = string.Empty;
-                text1 = string.Empty;
-                text2 = string.Empty;
-                if (!string.IsNullOrEmpty(m.GetString(i, 0, string.Empty)))
-                {
-                    //m.GetString(i, 0, string.Empty)是字串的KEY值
-                    text = m.GetString(i, 0, string.Empty);
-                    //m.GetString(i, 0, string.Empty)是字串的英文描述
-                    text1 = m.GetString(i, 1, string.Empty);
-                    //m.GetString(i, 0, string.Empty)是字串的中文描述
-                    text2 = m.GetString(i, 2, string.Empty);
-                    try
-                    {
-                        //寫到陣列去
-                        dict[i, 0] = text;
-                        dict[i, 1] = text1;
-                        dict[i, 2] = text2;
-
-                        //輸出html字串
-                        sw.WriteLine("<<<<" + text + ">>>>");
-                        sw.WriteLine(text2);
-                        sw.WriteLine(text1);
-
-                        //dict_locale_csv.Add(text, text2);
-                        //dict_locale_csv_eng.Add(text, text1);
-                    }
-                    catch (Exception var_8_9E)
-                    {
-                        //Watchdog.LogError("[SimpleLocale] (Duplicated Translation Label) Key: " + text + " Msg: " + text2);
-                    }
-                    string[] array = text.Split(new char[] { '_' });
-                    if (array.Length == 2 && text.StartsWith("TIP_") && int.TryParse(array[1], out num2))
-                    {
-                        TipsManager.Add(text, text2);
-                    }
-                }
-            }
-            sw.Close();
-            fs2.Close();
-
-            return path;
-
-            //flushxlsxfile();
-            //ret = JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented);
-
-
-
-            // This text is added only once to the file.
-
-            // Create a file to write to.
-            //string createText = "Hello and Welcome" + Environment.NewLine;
-            //File.WriteAllText(path, createText, Encoding.UTF8);
-            //File.WriteAllText(path, "1234456dfghdfgsdf\n245asdsdf", Encoding.UTF8);
-
-            return fileName;
-        }
-
-        //[WebMethod]
-        public string Test(string file)
-        {
-            string ret = "";
-            DataTable result = new DataTable("Locale");
-
-            loadLocaleCsv2();
-            result.Columns.Add("編號");
-            result.Columns.Add("中文");
-            result.Columns.Add("英文");
-
-            foreach (KeyValuePair<string, string> item in dict_locale_csv)
-            {
-                var row = result.NewRow();
-                row["編號"] = item.Key;
-                row["中文"] = item.Value;
-                row["英文"] = dict_locale_csv_eng[item.Key];
-                result.Rows.Add(row);
-            }
-
-            //ret += "<table>" + "<tr><td>編號</td><td>中文</td><td>英文</td></tr>";
-
-            //foreach (KeyValuePair<string, string> kvp in dict_locale_csv)
-            //{
-            //    ret += "<tr>";
-            //    ret += "<td>" + kvp.Key + "</td>" + "<td>" + kvp.Value + "</td>" + "<td>" + dict_locale_csv_eng[kvp.Key] + "</td>";
-            //    ret += "</tr>";                
-            //}
-            //ret += "</table>";
-            DataTableToExcel(result, "Locale", true);
-            flushxlsxfile();
-            //ret = JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented); 
-            return fileName;
-        }
-
-        private string fileName = null; //文檔名
-        private IWorkbook workbook = null;
-
         /// <summary>
         /// 將DataTable數據導入到excel中
         /// </summary>
@@ -2321,7 +2626,7 @@ namespace Tosapp_Tool
         /// <param name="isColumnWritten">DataTable的列名是否要導入</param>
         /// <param name="sheetName">要導入的excel的sheet的名稱</param>
         /// <returns>導入數據行數(包含列名那一行)</returns>
-        public int DataTableToExcel(DataTable data, string sheetName, bool isColumnWritten)
+        private int DataTableToExcel(DataTable data, string sheetName, bool isColumnWritten)
         {
             //fileName = @"E:\11.xlsx";
             fileName = Path.GetTempFileName();
@@ -2380,7 +2685,10 @@ namespace Tosapp_Tool
             }
         }
 
-        protected void flushxlsxfile()
+        /// <summary>
+        /// 輸出excel檔
+        /// </summary>
+        private void flushxlsxfile()
         {
             var bufferSize = 102400;
             var buffer = new byte[bufferSize];
@@ -2411,86 +2719,6 @@ namespace Tosapp_Tool
             fs.Close();
             Context.Response.End();
         }
-
-        [WebMethod]
-        public string StoreGameData(string arg_gamedata_json)
-        {
-            JObject jo_gamedata = JObject.Parse(arg_gamedata_json);
-            string timeStamp = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds).ToString();
-
-            StreamWriter monster = new StreamWriter(Server.MapPath("~/json/") + "/Monster_" + timeStamp + ".txt");
-
-            string tbl_title;
-
-            tbl_title = "";
-            if (jo_gamedata["data"]["monsters"] != null)
-            {
-                if (jo_gamedata["data"]["monsters"].Count() > 0)
-                {
-                    int tbl_col_cnt = (jo_gamedata["data"]["monsters"][0].ToString().Split('|')).Count();
-                    for (int i = 0; i < tbl_col_cnt; i++)
-                        tbl_title += "col_" + (i + 1).ToString() + "|";
-                    tbl_title = tbl_title.Substring(0, tbl_title.Length - 1);
-
-                    monster.Write(tbl_title);
-                    foreach (string ln in jo_gamedata["data"]["monsters"])
-                        monster.Write("\r\n" + ln.Replace("\r\n", "char(10)"));
-                }
-            }
-            monster.Close();
-
-            if (File.Exists(Server.MapPath("~/") + "/Monster.txt"))
-                File.Delete(Server.MapPath("~/") + "/Monster.txt");
-            File.Copy(Server.MapPath("~/json/") + "/Monster_" + timeStamp + ".txt", Server.MapPath("~/") + "/Monster.txt");
-
-            return "success";
-        }
-
-        [WebMethod]
-        public string GetAttribute(string MonsterID)
-        {
-            string attr = "", attr_type = "", realMonsterID = "";
-
-            MonsterID = MonsterID.Trim();
-            realMonsterID = MonsterID;
-            DataTable dt_monsters, dt_monsterSkins;
-            dt_monsters = TxtConvertToDataTable("~/Monster.txt", "Monster", "|");
-            dt_monsterSkins = TxtConvertToDataTable("~/monsterSkins.txt", "monsterSkins", "|");
-            if ((MonsterID.Substring(0, 1) == "6") && (MonsterID.Length == 4))
-            {
-                var query_skin = from c in dt_monsterSkins.AsEnumerable()
-                                 where c.Field<string>("col_1") == MonsterID.Substring(1, 3)
-                                 select c;
-                foreach (DataRow dr in query_skin)
-                {
-                    realMonsterID = dr[1].ToString();
-                }
-            }
-            var query_mons = from c in dt_monsters.AsEnumerable()
-                             where c.Field<string>("col_1") == realMonsterID
-                             select c;
-            foreach (DataRow dr in query_mons)
-            {
-                attr = dr[4].ToString();
-                attr_type = dr[67].ToString();
-            }
-            return attr_type + "_" + attr;
-        }
-
-        [WebMethod]
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string HelloWorld()
-        {
-            string mes = "success";
-            try
-            {
-                Context.Response.Output.Write("testtesttesttest");
-            }
-            catch (Exception e)
-            {
-                mes = e.Message.ToString();
-            }
-            return "test";
-        }
+        #endregion
     }
 }

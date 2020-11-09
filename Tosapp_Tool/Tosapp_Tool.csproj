@@ -648,6 +648,8 @@
     <Compile Include="Account\ResetPasswordConfirmation.aspx.designer.cs">
       <DependentUpon>ResetPasswordConfirmation.aspx</DependentUpon>
     </Compile>
+    <Compile Include="MonsterInfo.cs" />
+    <Compile Include="SoulSkillProperty.cs" />
     <Compile Include="WaveBasic.cs" />
     <Compile Include="WaveDetail.cs" />
     <Content Include="Crypto.cs" />
@@ -778,8 +780,6 @@
     <Folder Include="App_Code\" />
     <Folder Include="App_Data\" />
     <Folder Include="images\" />
-    <Folder Include="img\" />
-    <Folder Include="json\" />
     <Folder Include="js\cors\" />
     <Folder Include="js\vendor\" />
   </ItemGroup>
