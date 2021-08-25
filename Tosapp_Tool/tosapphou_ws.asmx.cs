@@ -1409,6 +1409,7 @@ namespace Tosapp_Tool
             WaveDetail temp_wd = new WaveDetail();
 
             Match match;
+            MatchCollection matches;
             string templine = "";
             string stage = "";
             temp_wb.WaveId = "";
@@ -1545,6 +1546,12 @@ namespace Tosapp_Tool
                     match = Regex.Match(templine, @"es\=([^\|\{\}]*)");
                     temp_wd.EnemySkill = ((match.Success) && (match.Groups[1].Value != "")) ? match.Groups[1].Value : "0";
 
+                    //12.1 在note裡面加入多個敵人技能
+                    temp_wd.Note = "";
+                    matches = Regex.Matches(templine, @"\{\{[eE][sS](\d+)\}\}");
+                    foreach (Match mat in matches)
+                        temp_wd.Note += (mat.Success && (mat.Groups[1].Value != "")) ? (temp_wd.Note == "" ? "" : "\n") + "[skill=3]" + mat.Groups[1].Value + "[/skill]" : "";
+
                     //13.修羅場點數(未完成)
                     temp_wd.PVEScore = "0";
 
@@ -1675,6 +1682,16 @@ namespace Tosapp_Tool
             temp_wd.MultiBloodFlag = multiblood_flag;
             temp_wd.MultiBloodLevel = times.ToString();
             temp_wd.EnemySkill = jo_enemies.GetValue("characteristic") != null ? jo_enemies.GetValue("characteristic").ToString() : "0";
+
+            //20210803 新增多技能
+            temp_wd.Note = "";
+            dynamic jo = jo_enemies.GetValue("characteristicList");
+            foreach (var item in jo)
+            {
+                temp_wd.Note += (temp_wd.Note == "" ? "" : "\n") + "[skill=3]" + item + "[/skill]";
+                temp_wd.EnemySkill = "0";
+                // Use as required
+            }
 
             temp_wdl.Add(temp_wd);
 
@@ -1885,7 +1902,7 @@ namespace Tosapp_Tool
                         html_text += (wd.EnemySkill != "0" ? ("|es=" + wd.EnemySkill) : "");
                         if (wd.WaveDetailId == 1)
                             html_text += (wb.WaveSkill != "0" ? ("|ws=" + wb.WaveSkill) : "");
-
+                        html_text += wd.Note == "" ? "" : ("|note=" + wd.Note.Replace("[skill=3]","{{ES").Replace("[/skill]", "}}"));
                         html_text += "}}</td></tr>";
                     }
                 }

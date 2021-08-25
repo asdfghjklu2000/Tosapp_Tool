@@ -24,5 +24,6 @@ namespace Tosapp_Tool
         public string MultiBloodLevel { get; set; }
         public string EnemySkill { get; set; }
         public string EscapeRound { get; set; }
+        public string Note { get; set; }
     }
 }
